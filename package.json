@@ -1,0 +1,15 @@
+{
+  "name": "storefront-js",
+  "version": "1.0.0",
+  "description": "A Simple Storefront, made of a Server and Client, written in Vanilla JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "haydende",
+  "license": "ISC",
+  "workspaces": [
+    "storefront-app",
+    "storefront-server"
+  ]
+}

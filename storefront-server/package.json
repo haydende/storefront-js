@@ -1,0 +1,12 @@
+{
+  "name": "storefront-server",
+  "version": "1.0.0",
+  "description": "The Server component of the storefront-js project",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "author": "haydende",
+  "license": "ISC"
+}
