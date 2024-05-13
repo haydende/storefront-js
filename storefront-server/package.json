@@ -2,11 +2,18 @@
   "name": "storefront-server",
   "version": "1.0.0",
   "description": "The Server component of the storefront-js project",
+  "type": "module",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
-    "test": "test"
+    "test": "jasmine"
   },
   "author": "haydende",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine": "^5.1.0",
+    "testcontainers": "^10.9.0"
+  },
+  "dependencies": {
+    "postgres": "^3.4.4"
+  }
 }
