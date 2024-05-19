@@ -2,7 +2,11 @@ services:
   postgres:
     image: postgres:16.2
     environment:
+      - POSTGRES_USER=peegee
       - POSTGRES_PASSWORD=somepassword
     ports:
       - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./storefront-server/documentation/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
 

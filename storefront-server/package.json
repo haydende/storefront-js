@@ -10,10 +10,15 @@
   "author": "haydende",
   "license": "ISC",
   "devDependencies": {
+    "@testcontainers/postgresql": "^10.9.0",
     "jasmine": "^5.1.0",
+    "karma": "^6.4.3",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-jasmine": "^5.1.0",
     "testcontainers": "^10.9.0"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "postgres": "^3.4.4"
   }
 }

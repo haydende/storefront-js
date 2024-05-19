@@ -1,11 +1,21 @@
-import { sql } from './database.js'
+import { Database } from './database.js'
 
-export async function getUsersWithFirstNameLike(firstName) {
-    const users = await sql`
-        SELECT *
-        FROM Storefront.Users
-        WHERE first_name like ${firstName}
-    `;
+export class UserService {
 
-    return users;
+    sql;
+
+    constructor() {
+       this.sql = Database.createConnection();
+    }
+
+    async getUsersWithFirstNameLike(firstName) {
+        const users = await this.sql`
+            SELECT *
+            FROM Users
+            WHERE first_name like ${firstName}
+        `;
+
+        return users;
+    }
+
 }
