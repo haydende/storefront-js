@@ -5,17 +5,15 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js"
   },
   "author": "haydende",
   "license": "ISC",
   "devDependencies": {
-    "@testcontainers/postgresql": "^10.9.0",
-    "jasmine": "^5.1.0",
-    "karma": "^6.4.3",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-jasmine": "^5.1.0",
-    "testcontainers": "^10.9.0"
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "testcontainers": "^10.9.0",
+    "@testcontainers/postgresql": "^10.9.0"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

@@ -9,13 +9,11 @@ export class UserService {
     }
 
     async getUsersWithFirstNameLike(firstName) {
-        const users = await this.sql`
+        return await this.sql`
             SELECT *
-            FROM Users
+            FROM storefront.users
             WHERE first_name like ${firstName}
         `;
-
-        return users;
     }
 
 }
