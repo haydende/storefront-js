@@ -27,7 +27,7 @@ describe("UserService - Unit Tests", () => {
             .withLogConsumer(stream => {
                 stream.on("data", line => console.log(line))
                 stream.on("err", line => console.error(line))
-                stream.on("end", () => console.warn("The container's log stream has closed."))
+                stream.on("end", () => console.log("The container's log stream has closed."))
             })
             .withCopyFilesToContainer([
                 {
@@ -41,7 +41,7 @@ describe("UserService - Unit Tests", () => {
 
         process.env.PGPORT = containerPort;
 
-        console.log(`Attempting to connect with params:\n   username: ${user}\n   password: ${password}\n   database: ${database}`);
+        console.debug(`Attempting to connect with params:\n    username: ${user}\n    password: ${password}\n    database: ${database}\n    port: ${containerPort}`);
         sql = postgres({
             username: user,
             password: password,
@@ -78,30 +78,110 @@ describe("UserService - Unit Tests", () => {
         }
     })
 
-    it('can retrieve all users from the users table', async () => {
+    beforeEach(async () => {
+        await sql`DELETE FROM storefront.users;`
+        await sql`ALTER SEQUENCE storefront.users_user_id_seq RESTART;`
+    })
 
-        // Given we have the UserService created
-        let target = new UserService();
+    describe("getUsersWithFirstNameLike", () => {
 
-        // and we insert a new user to the database
-        await sql`
-            insert into storefront.users ("first_name", "last_name", "email", "phone") 
-            values ('first', 'last', 'flast@email.com', '1234456789')
-        `
+        it('can retrieve all users with like "first_name" value - only one record present', async () => {
 
-        const returnedValues = await target.getUsersWithFirstNameLike("first")
+            // Given...
+            // ...we have the UserService created
+            let target = new UserService();
 
-        expect(returnedValues).toBeTruthy()
-        expect(returnedValues).toHaveLength(1);
+            // ...we insert a new user to the database
+            await sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
+                VALUES ('first', 'last', 'flast@email.com', '1234456789');
+            `
 
-        let rowOne = returnedValues[0];
+            // When...
+            // ...we use the UserService to get all users with "first_name" like 'first'
+            const returnedValues = await target.getUsersWithFirstNameLike("first")
 
-        expect(rowOne).toBeTruthy();
-        expect(rowOne.user_id).toEqual("1");
-        expect(rowOne.first_name).toEqual("first");
-        expect(rowOne.last_name).toEqual("last");
-        expect(rowOne.email).toEqual("flast@email.com");
-        expect(rowOne.phone).toEqual("1234456789");
+            // Then...
+            // ...we verify the records that have been returned
+            expect(returnedValues).toBeTruthy()
+            expect(returnedValues).toHaveLength(1);
+
+            let rowOne = returnedValues[0];
+
+            expect(rowOne).toBeTruthy();
+            expect(rowOne.user_id).toEqual("1");
+            expect(rowOne.first_name).toEqual("first");
+            expect(rowOne.last_name).toEqual("last");
+            expect(rowOne.email).toEqual("flast@email.com");
+            expect(rowOne.phone).toEqual("1234456789");
+        })
+
+        it('can retrieve all users with like "first_name" value - multiple records present, some don\'t match', async () => {
+
+            // Given...
+            // ...we initialise the UserService
+            let target = new UserService();
+
+            // ...we insert a set of users into the database
+            await sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
+                VALUES 
+                    ('Jerry', 'Jerryson', 'jjerryson@email.com', '123456789'),
+                    ('Jerry', 'Johnson', 'jjohnson@email.com', '987654321'),
+                    ('Terry', 'Terryson', 'tterryson@email.com', '546372819'),
+                    ('Jerry', 'Jackson', 'jjackson@email.com', '918273645'),
+                    ('David', 'Smith', 'dsmith@somedomain.com', null);
+            `
+
+            // When...
+            // ...we use the UserService to get all users with "first_name" like 'Jerry'
+            const returnedValues = await target.getUsersWithFirstNameLike("Jerry");
+
+            // Then...
+            // ...we verify the records that have been returned
+            expect(returnedValues).toBeTruthy();
+            expect(returnedValues).toHaveLength(3);
+
+            let rowOne = returnedValues[0];
+            expect(rowOne).toBeTruthy();
+            expect(rowOne.user_id).toEqual("1");
+            expect(rowOne.first_name).toEqual("Jerry");
+
+            let rowTwo = returnedValues[1];
+            expect(rowTwo).toBeTruthy();
+            expect(rowTwo.user_id).toEqual("2");
+            expect(rowTwo.first_name).toEqual("Jerry");
+
+            let rowThree = returnedValues[2];
+            expect(rowThree).toBeTruthy();
+            expect(rowThree.user_id).toEqual("4");
+            expect(rowThree.first_name).toEqual("Jerry");
+
+        })
+
+        it('will return an empty list when no records match', async () => {
+
+            // Given...
+            // ...we initialise the UserService
+            let target = new UserService();
+
+            // ...we insert a set of users into the database
+            await sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
+                VALUES 
+                    ('Michael', 'Jones', 'mj@email.com', null),
+                    ('John', 'Smith', 'smithj@email.com', null),
+                    ('Heidi', 'Lawrence', 'hlaw@email.com', null);`
+
+            // When...
+            // ...we use the UserService to get all users with "first_name" like 'Jerry'
+            const returnedValues = await target.getUsersWithFirstNameLike("Jerry");
+
+            // Then...
+            // ...we verify that an empty list is returned, as no records match the criteria
+            expect(returnedValues).toBeTruthy();
+            expect(returnedValues).toHaveLength(0);
+        })
     })
 
 })
