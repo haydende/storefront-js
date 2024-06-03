@@ -1,6 +1,7 @@
 import postgres from "postgres";
-import { UserService } from './users.js'
+import { UserService } from './UserService.js'
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
+import {User} from "../../../model/User.js";
 
 describe("UserService - Unit Tests", () => {
 
@@ -106,12 +107,12 @@ describe("UserService - Unit Tests", () => {
             expect(returnedValues).toBeTruthy()
             expect(returnedValues).toHaveLength(1);
 
-            let rowOne = returnedValues[0];
+            let rowOne = new User(returnedValues[0]);
 
             expect(rowOne).toBeTruthy();
-            expect(rowOne.user_id).toEqual("1");
-            expect(rowOne.first_name).toEqual("first");
-            expect(rowOne.last_name).toEqual("last");
+            expect(rowOne.id).toEqual("1");
+            expect(rowOne.firstName).toEqual("first");
+            expect(rowOne.lastName).toEqual("last");
             expect(rowOne.email).toEqual("flast@email.com");
             expect(rowOne.phone).toEqual("1234456789");
         })
@@ -142,20 +143,20 @@ describe("UserService - Unit Tests", () => {
             expect(returnedValues).toBeTruthy();
             expect(returnedValues).toHaveLength(3);
 
-            let rowOne = returnedValues[0];
-            expect(rowOne).toBeTruthy();
-            expect(rowOne.user_id).toEqual("1");
-            expect(rowOne.first_name).toEqual("Jerry");
+            let userOne = new User(returnedValues[0]);
+            expect(userOne).toBeTruthy();
+            expect(userOne.id).toEqual("1");
+            expect(userOne.firstName).toEqual("Jerry");
 
-            let rowTwo = returnedValues[1];
-            expect(rowTwo).toBeTruthy();
-            expect(rowTwo.user_id).toEqual("2");
-            expect(rowTwo.first_name).toEqual("Jerry");
+            let userTwo = new User(returnedValues[1]);
+            expect(userTwo).toBeTruthy();
+            expect(userTwo.id).toEqual("2");
+            expect(userTwo.firstName).toEqual("Jerry");
 
-            let rowThree = returnedValues[2];
-            expect(rowThree).toBeTruthy();
-            expect(rowThree.user_id).toEqual("4");
-            expect(rowThree.first_name).toEqual("Jerry");
+            let userThree = new User(returnedValues[2]);
+            expect(userThree).toBeTruthy();
+            expect(userThree.id).toEqual("4");
+            expect(userThree.firstName).toEqual("Jerry");
 
         })
 
