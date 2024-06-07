@@ -12,7 +12,7 @@ export class UserService {
         return await this.sql`
             SELECT * 
             FROM storefront.users
-            WHERe user_id == ${id}
+            WHERe user_id = ${BigInt(id)}
         `
     }
 
@@ -42,6 +42,22 @@ export class UserService {
         } else {
             throw Error("Provided User contains an ID.")
         }
+    }
+
+    async updateUser(user) {
+
+        if (user.user_id == null) {
+            throw Error("Provided user has no ID!")
+        }
+
+        const columns = Object.keys(user)
+
+        return await this.sql`
+            UPDATE storefront.users 
+            SET ${this.sql(user, columns)}
+            WHERE user_id = ${BigInt(user.user_id)}
+            RETURNING *
+        `
     }
 
 }

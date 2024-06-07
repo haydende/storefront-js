@@ -183,6 +183,39 @@ describe("UserService - Unit Tests", () => {
             expect(returnedValues).toBeTruthy();
             expect(returnedValues).toHaveLength(0);
         })
+
+        it('will update a record when an incomplete object is passed', async () => {
+
+            // Given...
+            // ...we initialise the UserService
+            let target = new UserService();
+
+            // ...we insert a set of users into the database
+            await sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
+                VALUES 
+                    ('Peter', 'Pan', 'pan@email.com', null),
+                    ('John', 'Smith', 'jsmith@email.com', null)
+            `
+
+            // When...
+            // ...we use the UserService to update the user with an ID of 1
+            const updatedUsers = await target.updateUser({user_id: 1, first_name: 'Something'});
+            const updatedUser = updatedUsers[0];
+
+            // Then...
+            // ...we make sure the statement has returned an updated User
+            expect(updatedUser).toBeTruthy();
+            expect(updatedUser.first_name).toBeTruthy()
+
+            // ...we retrieve the User from the database again, for reference
+            const returnedUsers = await target.getUserWithId(1)
+            const actualUser = returnedUsers[0]
+
+            // ...we compare the 'first_name' field for both
+            expect(updatedUser.first_name).toEqual(actualUser.first_name)
+
+        })
     })
 
 })
