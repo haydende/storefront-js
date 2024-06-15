@@ -1,15 +1,19 @@
-import postgres from "postgres";
 import { UserService } from './UserService.js'
+import { User } from "../../../model/User.js";
+import postgres from "postgres";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import {User} from "../../../model/User.js";
+import console from 'console'
 
 describe("UserService - Unit Tests", () => {
 
+    const jestConsole = global.console
     let container;
     let containerPort;
     let sql;
 
     beforeAll(async () => {
+
+        global.console = console
 
         let user = "peegee";
         let password = "somepassword";
@@ -26,9 +30,9 @@ describe("UserService - Unit Tests", () => {
             .withUsername(user)
             .withPassword(password)
             .withLogConsumer(stream => {
-                stream.on("data", line => console.log(line))
-                stream.on("err", line => console.error(line))
-                stream.on("end", () => console.log("The container's log stream has closed."))
+                stream.on("data", line => global.console.log(`container: ${line}`))
+                stream.on("err", line => global.console.error(line))
+                stream.on("end", () => global.console.log("The container's log stream has closed."))
             })
             .withCopyFilesToContainer([
                 {
@@ -58,7 +62,9 @@ describe("UserService - Unit Tests", () => {
         while (retries < maxRetries) {
             try {
                 await sql`SELECT NOW()`;
-                console.log("It worked!");
+                global.console.log(
+                    `PostgreSQL container successfully started with name [${container.startedTestContainer.name}] and port [${containerPort}]`
+                );
                 break;
             } catch (err) {
                 console.log(`Oops. That didn't work! Error: ${err}`);
@@ -75,8 +81,9 @@ describe("UserService - Unit Tests", () => {
 
         if (container) {
             await container.stop()
-
         }
+
+        global.console = jestConsole
     })
 
     beforeEach(async () => {
@@ -88,22 +95,15 @@ describe("UserService - Unit Tests", () => {
 
         it('can retrieve all users with like "first_name" value - only one record present', async () => {
 
-            // Given...
-            // ...we have the UserService created
             let target = new UserService();
 
-            // ...we insert a new user to the database
             await sql`
                 INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
                 VALUES ('first', 'last', 'flast@email.com', '1234456789');
             `
 
-            // When...
-            // ...we use the UserService to get all users with "first_name" like 'first'
             const returnedValues = await target.getUsersWithFirstNameLike("first")
 
-            // Then...
-            // ...we verify the records that have been returned
             expect(returnedValues).toBeTruthy()
             expect(returnedValues).toHaveLength(1);
 
@@ -119,11 +119,8 @@ describe("UserService - Unit Tests", () => {
 
         it('can retrieve all users with like "first_name" value - multiple records present, some don\'t match', async () => {
 
-            // Given...
-            // ...we initialise the UserService
             let target = new UserService();
 
-            // ...we insert a set of users into the database
             await sql`
                 INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
                 VALUES 
@@ -134,12 +131,8 @@ describe("UserService - Unit Tests", () => {
                     ('David', 'Smith', 'dsmith@somedomain.com', null);
             `
 
-            // When...
-            // ...we use the UserService to get all users with "first_name" like 'Jerry'
             const returnedValues = await target.getUsersWithFirstNameLike("Jerry");
 
-            // Then...
-            // ...we verify the records that have been returned
             expect(returnedValues).toBeTruthy();
             expect(returnedValues).toHaveLength(3);
 
@@ -162,11 +155,8 @@ describe("UserService - Unit Tests", () => {
 
         it('will return an empty list when no records match', async () => {
 
-            // Given...
-            // ...we initialise the UserService
             let target = new UserService();
 
-            // ...we insert a set of users into the database
             await sql`
                 INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
                 VALUES 
@@ -174,23 +164,19 @@ describe("UserService - Unit Tests", () => {
                     ('John', 'Smith', 'smithj@email.com', null),
                     ('Heidi', 'Lawrence', 'hlaw@email.com', null);`
 
-            // When...
-            // ...we use the UserService to get all users with "first_name" like 'Jerry'
             const returnedValues = await target.getUsersWithFirstNameLike("Jerry");
 
-            // Then...
-            // ...we verify that an empty list is returned, as no records match the criteria
             expect(returnedValues).toBeTruthy();
             expect(returnedValues).toHaveLength(0);
         })
+    })
 
-        it('will update a record when an incomplete object is passed', async () => {
+    describe('updateUser', () => {
 
-            // Given...
-            // ...we initialise the UserService
+        it('will update a record when not all fields are provided', async () => {
+
             let target = new UserService();
 
-            // ...we insert a set of users into the database
             await sql`
                 INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
                 VALUES 
@@ -198,24 +184,74 @@ describe("UserService - Unit Tests", () => {
                     ('John', 'Smith', 'jsmith@email.com', null)
             `
 
-            // When...
-            // ...we use the UserService to update the user with an ID of 1
-            const updatedUsers = await target.updateUser({user_id: 1, first_name: 'Something'});
+            const updatedUsers = await target.updateUser({user_id: 1, last_name: 'Something'});
             const updatedUser = updatedUsers[0];
 
-            // Then...
-            // ...we make sure the statement has returned an updated User
             expect(updatedUser).toBeTruthy();
-            expect(updatedUser.first_name).toBeTruthy()
+            expect(updatedUser.last_name).toBeTruthy()
 
-            // ...we retrieve the User from the database again, for reference
             const returnedUsers = await target.getUserWithId(1)
             const actualUser = returnedUsers[0]
 
-            // ...we compare the 'first_name' field for both
-            expect(updatedUser.first_name).toEqual(actualUser.first_name)
+            expect(updatedUser.last_name).toEqual(actualUser.last_name)
 
         })
+
+    })
+
+    describe('createUser', () => {
+
+        it('will create a new user when the table is empty', async () => {
+
+            let target = new UserService()
+
+            const newUser = {
+                first_name: "Mary",
+                last_name: "Jane",
+                email: "mj@email.com",
+                phone: "1234456789"
+            }
+
+            const insertResponse = await target.createUser(newUser)
+            const savedUser = insertResponse[0]
+
+            const queryResponse = await target.getUserWithId(savedUser.user_id)
+            const actualUser = queryResponse[0]
+
+            expect(savedUser).toEqual(actualUser)
+
+        })
+
+    })
+
+    describe('deleteUser', () => {
+
+        it('will delete a user when only an id is provided', async () => {
+
+            let target = new UserService();
+
+            const newUser = {
+                first_name: "Mary",
+                last_name: "Jane",
+                email: "mj@email.com",
+                phone: "1234456789"
+            }
+
+            const insertResponse = await sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone")
+                VALUES (${newUser.first_name}, ${newUser.last_name}, ${newUser.email}, ${newUser.phone})
+                RETURNING *
+            `
+            const savedUser = insertResponse[0]
+
+            await target.deleteUser(savedUser.user_id)
+
+            const queryResponse = await target.getUserWithId(savedUser.user_id)
+
+            expect(queryResponse.length).toEqual(0)
+
+        })
+
     })
 
 })

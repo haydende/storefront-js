@@ -12,7 +12,7 @@ export class UserService {
         return await this.sql`
             SELECT * 
             FROM storefront.users
-            WHERe user_id = ${BigInt(id)}
+            WHERE user_id = ${BigInt(id)}
         `
     }
 
@@ -32,16 +32,17 @@ export class UserService {
         `;
     }
 
-    async createUser({userId, firstName, lastName, email, phone}) {
-        if (userId != null) {
-            return await sql`
-                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
-                VALUES ('${firstName}', '${lastName}', '${email}', '${phone}')
-                RETURNING *;
-            `
-        } else {
+    async createUser({user_id, first_name, last_name, email, phone}) {
+
+        if (user_id != null) {
             throw Error("Provided User contains an ID.")
         }
+
+        return await this.sql`
+                INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
+                VALUES (${first_name}, ${last_name}, ${email}, ${phone})
+                RETURNING *;
+            `
     }
 
     async updateUser(user) {
@@ -57,6 +58,13 @@ export class UserService {
             SET ${this.sql(user, columns)}
             WHERE user_id = ${BigInt(user.user_id)}
             RETURNING *
+        `
+    }
+
+    async deleteUser(userId) {
+        await this.sql`
+            DELETE FROM storefront.users
+            WHERE user_id = ${BigInt(userId)}
         `
     }
 
