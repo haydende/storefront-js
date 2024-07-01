@@ -60,11 +60,10 @@ CREATE SCHEMA storefront
     )
 
     CREATE TABLE BasketProducts (
-        basket_product_id bigserial PRIMARY KEY,
         basket_id bigserial REFERENCES Baskets (basket_id),
         product_id bigserial REFERENCES Products (product_id),
         quantity int,
-        price money
+        PRIMARY KEY (basket_id, product_id)
     )
 
     CREATE TABLE Orders (
