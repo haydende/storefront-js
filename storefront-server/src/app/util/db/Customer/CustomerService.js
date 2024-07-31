@@ -16,23 +16,27 @@ class CustomerService {
         `
     }
 
-    async createCustomer({customerId, userId, ...otherCustomerFields}) {
-        if (customerId) {
-            throw new Error('Provided Customer contains an ID.')
-        }
-        if (!userId) {
-            throw new Error('Provided Customer must have a user ID!')
-        }
+    async createCustomer(customer) {
 
-        const customer = {customerId, userId, ...otherCustomerFields}
         const columns = Object.keys(custmomer)
         const values = Object.values(customer)
 
-        return await this.sql`
-            INSERT INTO storefront.customers (${this.sql(customer, columns)})
-            VALUES ${this.sql(customer, values)}
-            RETURNING *
-        `
+        let response;
+        try {
+            response = await this.sql`
+                INSERT INTO storefront.customers (${this.sql(customer, columns)})
+                VALUES ${this.sql(customer, values)}
+                RETURNING * 
+            `
+
+        } catch (error) {
+            let errorMessage = `An error occurred when creating a new Customer record: ${error.message}`
+            console.error(errorMessage)
+            response = { error: errorMessage }
+
+        }
+
+        return response;
     }
 
     async updateCustomer({customerId, ...otherCustomerFields}) {

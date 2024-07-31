@@ -1,5 +1,4 @@
 import postgres from "postgres";
-import 'dotenv/config';
 
 export class Database {
 

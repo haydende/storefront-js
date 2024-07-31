@@ -1,4 +1,4 @@
-import {Database} from "../database.js";
+import { Database } from "../database.js";
 
 class ProductService {
 
@@ -10,9 +10,9 @@ class ProductService {
 
     async getProductWithId(productId) {
         return await this.sql`
-            SELECT * 
+            SELECT *
             FROM storefront.products
-            WHERE product_id = ${BigInt(productId)}
+            WHERE product_id = ${ BigInt(productId) }
         `
     }
 
@@ -25,8 +25,9 @@ class ProductService {
         const values = Object.values(product)
 
         return await this.sql`
-            INSERT INTO storefront.products (${this.sql(product, columns)})
-            VALUES ${this.sql(product, values)}
+            INSERT INTO storefront.products (${ this.sql(product, columns) })
+            VALUES
+            ${ this.sql(product, values) }
             RETURNING *
         `
     }
@@ -40,17 +41,18 @@ class ProductService {
         const columns = Object.keys(product)
 
         return await this.sql`
-            UPDATE storefront.products 
-            SET ${this.sql(product, columns)}
-            WHERE product_id = ${BigInt(productId)}
+            UPDATE storefront.products
+            SET ${ this.sql(product, columns) }
+            WHERE product_id = ${ BigInt(productId) }
             RETURNING *
         `
     }
 
     async deleteProduct(productId) {
         await this.sql`
-            DELETE FROM storefront.products
-            WHERE product_id = ${BigInt(productId)}
+            DELETE
+            FROM storefront.products
+            WHERE product_id = ${ BigInt(productId) }
         `
     }
 
