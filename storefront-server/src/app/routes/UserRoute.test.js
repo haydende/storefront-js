@@ -1,7 +1,8 @@
 import postgres from 'postgres';
 import console from 'console';
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import { UserRoute } from "./UserRoute";
+import express from "express";
+import supertest from "supertest";
 
 describe('User Route Integration Tests', () => {
 
@@ -9,8 +10,9 @@ describe('User Route Integration Tests', () => {
     let container;
     let containerPort;
     let sql;
+    let userRouter;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         global.console = console;
 
         let user = "peegee";
@@ -28,8 +30,8 @@ describe('User Route Integration Tests', () => {
             .withUsername(user)
             .withPassword(password)
             .withLogConsumer(stream => {
-                stream.on("data", line => global.console.log(`container: ${line}`))
-                stream.on("err", line => global.console.error(line))
+                stream.on("data", line => global.console.log(`container: ${line.trim()}`))
+                stream.on("err", line => global.console.error(line.trim()))
                 stream.on("end", () => global.console.log("The container's log stream has closed."))
             })
             .withCopyFilesToContainer([
@@ -76,7 +78,15 @@ describe('User Route Integration Tests', () => {
                 await new Promise(resolve => setTimeout(resolve, retryInterval));
             }
         }
+
+        let userRouteImport = await import("./UserRoute.js")
+        userRouter = userRouteImport.userRouter
     }, 100000)
+
+    beforeEach(async () => {
+        await sql`DELETE FROM storefront.users;`
+        await sql`ALTER SEQUENCE storefront.users_user_id_seq RESTART;`
+    })
 
     afterAll(async () => {
         if (sql) {
@@ -94,7 +104,61 @@ describe('User Route Integration Tests', () => {
 
         it('will return the User with the matching ID', async () => {
 
-            
+            const statementResponse = await sql`
+                INSERT INTO storefront.users (first_name, last_name, email, phone) 
+                VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
+                       ('Jane', 'Doe', 'janedoe@email.com', '123456789')
+                RETURNING *;
+            `
+
+            let userOne = statementResponse[0]
+            let userTwo = statementResponse[1]
+
+            const app = express()
+            app.use('/users', userRouter)
+
+            const response = await supertest(app)
+                .get(`/users/${userOne.user_id}`)
+                .send()
+
+            const body = response.body
+            expect(body.user_id).toBe(userOne.user_id)
+            expect(body.first_name).toBe(userOne.first_name)
+            expect(body.last_name).toBe(userOne.last_name)
+            expect(body.email).toBe(userOne.email)
+            expect(body.phone).toBe(userOne.phone)
+        })
+
+        it('will return a 404 response when no Users exist', async () => {
+
+            const app = express()
+            app.use('/users', userRouter)
+
+            const response = await supertest(app)
+                .get('/users/2')
+                .send()
+
+            expect(response.statusCode).toBe(404);
+
+        })
+
+        it('will return a 404 response when no matching Users exist', async () => {
+
+            const statementResponse = await sql`
+                INSERT INTO storefront.users (first_name, last_name, email, phone) 
+                VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
+                       ('Jane', 'Doe', 'janedoe@email.com', '123456789')
+                RETURNING *;
+            `
+
+            const app = express()
+            app.use('/users', userRouter)
+
+            const response = await supertest(app)
+                .get('/users/5')
+                .send()
+
+            expect(response.statusCode).toBe(404);
 
         })
 

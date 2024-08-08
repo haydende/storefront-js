@@ -17,11 +17,6 @@ dotenv.config({
     path: options.environmentFile
 })
 
-console.log(process.env.PGHOST)
-console.log(process.env.PGPORT)
-console.log(process.env.PGDATABASE)
-console.log(process.env.PGUSERNAME)
-
 // dynamic import required to apply config before initialising relevant services
 let userRouter;
 await import("./src/app/routes/UserRoute.js")
