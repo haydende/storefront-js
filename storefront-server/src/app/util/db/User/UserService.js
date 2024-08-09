@@ -13,7 +13,7 @@ export class UserService {
 
         try {
             response = await this.sql`
-                SELECT * 
+                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(id)}
             `
@@ -32,7 +32,7 @@ export class UserService {
             response = await this.sql`
                     INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
                     VALUES (${firstName}, ${lastName}, ${email}, ${phone})
-                    RETURNING *;
+                    RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
                 `
         } catch (error) {
             response = { error: `Error occurred when inserting new User record: ${error.message}`}
@@ -45,13 +45,29 @@ export class UserService {
         let response;
         if (id) {
             try {
-                const columns = Object.keys(user)
+
+                const updatedFields = {}
+                let columns = Object.keys(user)
+
+                for (let column of columns) {
+                   switch (column) {
+                       case 'firstName':
+                           updatedFields.first_name = user[column]
+                           break
+                       case 'lastName':
+                           updatedFields.last_name = user[column]
+                           break
+                       default:
+                           updatedFields[column] = user[column]
+                   }
+                }
+                columns = Object.keys(updatedFields)
 
                 return await this.sql`
                     UPDATE storefront.users 
-                    SET ${this.sql(user, columns)}
+                    SET ${this.sql(updatedFields, columns)}
                     WHERE user_id = ${BigInt(id)}
-                    RETURNING *
+                    RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone
                 `
             } catch (error) {
                 response = { error: `Error occurred when updating User '${id}: ${error.message}` }
@@ -71,6 +87,8 @@ export class UserService {
                 DELETE FROM storefront.users
                 WHERE user_id = ${BigInt(userId)}
             `
+            // As long as the query doesn't yield an error, the requested record should not
+            // exist - even if it never existed to begin with
             response = { message: `User '${userId}' removed successfully.` }
         } catch (error) {
             response = { error: `Error occurred when deleting User '${userId}': ${error.message}` }

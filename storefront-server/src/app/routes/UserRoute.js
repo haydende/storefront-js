@@ -73,22 +73,22 @@ userRouter
         const { id } = req.params
 
         let queryResponse;
-        if (id) {
+        const userMatch = await userService.getUserWithId(id)
+        if (typeof userMatch[0] === "object") {
             queryResponse = await userService.updateUser(id, req.body)
+            if (queryResponse.error) {
+                res
+                    .status(500)
+                    .json(queryResponse)
+            } else if (queryResponse[0]) {
+                res
+                    .status(200)
+                    .json(queryResponse)
+            }
         } else {
             res
                 .status(400)
-                .json({ error: 'ID field is required!'})
-        }
-
-        if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
-        } else if (queryResponse[0]) {
-            res
-                .status(200)
-                .json(queryResponse)
+                .json({ error: `User with ID: '${id}' does not exist`})
         }
     })
 
@@ -96,13 +96,8 @@ userRouter
         const { id } = req.params
 
         let queryResponse;
-        if (id) {
             queryResponse = await userService.deleteUser(id)
-        } else {
-            res
-                .status(400)
-                .json(queryResponse)
-        }
+
         res
             .status(queryResponse.message ? 200 : 500)
             .json(queryResponse)
