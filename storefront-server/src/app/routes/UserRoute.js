@@ -1,10 +1,10 @@
 import { Router, json } from 'express'
 import { UserService } from '../util/db/User/UserService.js';
 
-export const userRouter = Router()
+export const router = Router()
 const userService = new UserService()
 
-userRouter
+router
 
     .use(json())
 
