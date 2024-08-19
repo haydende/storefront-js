@@ -13,7 +13,11 @@ export class UserService {
 
         try {
             response = await this.sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                SELECT user_id "userId",
+                       first_name "firstName",
+                       last_name "lastName",
+                       is_customer "isCustomer",
+                       email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(id)}
             `
@@ -25,15 +29,21 @@ export class UserService {
         return response
     }
 
-    async createUser({firstName, lastName, email, phone}) {
+    async createUser(user) {
 
         let response;
         try {
+
+            user = this.convertFieldsToSnakecase(user)
+
             response = await this.sql`
-                    INSERT INTO storefront.users ("first_name", "last_name", "email", "phone") 
-                    VALUES (${firstName}, ${lastName}, ${email}, ${phone})
-                    RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
-                `
+                INSERT INTO storefront.users ${this.sql(user)} 
+                RETURNING user_id "userId",
+                          first_name "firstName",
+                          last_name "lastName",
+                          is_customer "isCustomer",
+                          email, phone;
+            `
         } catch (error) {
             response = { error: `Error occurred when inserting new User record: ${error.message}`}
         }
@@ -46,28 +56,14 @@ export class UserService {
         if (id) {
             try {
 
-                const updatedFields = {}
-                let columns = Object.keys(user)
-
-                for (let column of columns) {
-                   switch (column) {
-                       case 'firstName':
-                           updatedFields.first_name = user[column]
-                           break
-                       case 'lastName':
-                           updatedFields.last_name = user[column]
-                           break
-                       default:
-                           updatedFields[column] = user[column]
-                   }
-                }
-                columns = Object.keys(updatedFields)
+                user = this.convertFieldsToSnakecase(user)
+                const columns = Object.keys(user)
 
                 return await this.sql`
                     UPDATE storefront.users 
-                    SET ${this.sql(updatedFields, columns)}
+                    SET ${this.sql(user, columns)}
                     WHERE user_id = ${BigInt(id)}
-                    RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                    RETURNING user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
                 `
             } catch (error) {
                 response = { error: `Error occurred when updating User '${id}: ${error.message}` }
@@ -95,6 +91,29 @@ export class UserService {
         }
 
         return response
+    }
+
+    // TODO: Implement a non-hardcoded solution
+    convertFieldsToSnakecase(user) {
+        const updatedFields = {}
+        let columns = Object.keys(user)
+
+        for (let column of columns) {
+            switch (column) {
+                case 'firstName':
+                    updatedFields.first_name = user[column]
+                    break
+                case 'lastName':
+                    updatedFields.last_name = user[column]
+                    break
+                case 'isCustomer':
+                    updatedFields.is_customer = user[column]
+                    break
+                default:
+                    updatedFields[column] = user[column]
+            }
+        }
+        return updatedFields
     }
 
 }

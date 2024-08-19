@@ -103,3 +103,13 @@ export async function preTestSetup() {
     await sql`ALTER SEQUENCE storefront.users_user_id_seq RESTART;`
 }
 
+export function assertFieldsMatch(objectOne, objectTwo) {
+    const objOneKeys = Object.keys(objectOne)
+    const objTwoKeys = Object.keys(objectTwo)
+
+    expect(objOneKeys.length).toEqual(objTwoKeys.length)
+    for (const key of objOneKeys) {
+        expect(objectOne[key]).toBeDefined()
+        expect(objectOne[key]).toEqual(objectTwo[key])
+    }
+}

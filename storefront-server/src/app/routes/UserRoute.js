@@ -13,9 +13,7 @@ router
         const { id } = req.params
         let queryResponse;
 
-        if (id) {
-            queryResponse = await userService.getUserWithId(id)
-        }
+        queryResponse = await userService.getUserWithId(id)
 
         if (queryResponse[0]) {
             res
@@ -30,19 +28,19 @@ router
         } else {
             res
                 .status(404)
-                .send(`User '${id}' not found`)
+                .json({ error: `User '${id}' not found` })
 
         }
     })
 
     // Create a new User
     .post('/new', async (req, res) => {
-        const { firstName, lastName, email, phone } = req.body
+        const { userId, user_id, firstName, lastName, email, ...otherFields } = req.body
 
         let queryResponse;
         if (firstName && lastName && email) {
             queryResponse = await userService.createUser({
-                firstName, lastName, email, phone
+                firstName, lastName, email, ...otherFields
             })
 
             if (queryResponse.error) {
@@ -50,21 +48,15 @@ router
                     .status(500)
                     .json(queryResponse)
 
-            } else if (queryResponse[0]) {
+            } else {
                 res
                     .status(200)
                     .json(queryResponse[0])
-
-            } else {
-                res
-                    .status(404)
-                    .json({})
-
             }
         } else {
             res
                 .status(400)
-                .send({ error: '"firstName", "lastName" and "email" fields are required!' })
+                .json({ error: '"firstName", "lastName" and "email" fields are required!' })
         }
     })
 
@@ -88,7 +80,7 @@ router
         } else {
             res
                 .status(400)
-                .json({ error: `User with ID: '${id}' does not exist`})
+                .json({ error: `User with ID '${id}' does not exist`})
         }
     })
 

@@ -15,6 +15,12 @@ const config = {
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: "v8",
 
+  // An array of regexp pattern strings used to skip coverage collection
+  coveragePathIgnorePatterns: [
+    "\\\\node_modules\\\\",
+    "src/test"
+  ],
+
   // A map from regular expressions to paths to transformers
   transform: {},
 
@@ -33,13 +39,6 @@ const config = {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   // collectCoverageFrom: undefined,
-
-
-  // An array of regexp pattern strings used to skip coverage collection
-  // coveragePathIgnorePatterns: [
-  //   "\\\\node_modules\\\\"
-  // ],
-
 
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [

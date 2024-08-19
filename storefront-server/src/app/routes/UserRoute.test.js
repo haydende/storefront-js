@@ -1,10 +1,10 @@
 import supertest from "supertest";
-import { app, sql, postSuiteSetup, preSuiteSetup, preTestSetup } from "./Routes.test.js";
+import { app, sql, assertFieldsMatch, postSuiteSetup, preSuiteSetup, preTestSetup } from "../../test/RoutesTesting.common.js";
 
 describe('User Route Integration Tests', () => {
 
     beforeAll(async () => {
-        await preSuiteSetup('./UserRoute.js', '/users')
+        await preSuiteSetup('../app/routes/UserRoute.js', '/users')
     })
 
     afterAll(async () => {
@@ -49,7 +49,8 @@ describe('User Route Integration Tests', () => {
                 .get('/users/2')
                 .send()
 
-            expect(response.statusCode).toBe(404);
+            expect(response.statusCode).toBe(404)
+            expect(response.body.error).toBe("User '2' not found")
 
         })
 
@@ -79,6 +80,7 @@ describe('User Route Integration Tests', () => {
             const toBeSaved = {
                 firstName: "John",
                 lastName: "Doe",
+                isCustomer: true,
                 email: "jdoe@email.com",
                 phone: "123456789"
             }
@@ -91,23 +93,18 @@ describe('User Route Integration Tests', () => {
 
             const body = response.body
             const newId = body.userId
-            expect(newId).toBe("1")
-            expect(body.firstName).toBe(toBeSaved.firstName)
-            expect(body.lastName).toBe(toBeSaved.lastName)
-            expect(body.email).toBe(toBeSaved.email)
-            expect(body.phone).toBe(toBeSaved.phone)
+
+            assertFieldsMatch(body, { userId: newId, ...toBeSaved})
 
             const statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(newId)};
             `
 
             let returnedUser = statementResponse[0]
-            expect(returnedUser.first_name).toBe(toBeSaved.first_name)
-            expect(returnedUser.last_name).toBe(toBeSaved.last_name)
-            expect(returnedUser.email).toBe(toBeSaved.email)
-            expect(returnedUser.phone).toBe(toBeSaved.phone)
+
+            assertFieldsMatch(returnedUser, body)
         })
 
         it('will save the new User record with a new ID value, despite one being provided', async () => {
@@ -128,23 +125,18 @@ describe('User Route Integration Tests', () => {
 
             const body = response.body
             const newId = body.userId
-            expect(newId).toBe("1")
-            expect(body.firstName).toBe(toBeSaved.firstName)
-            expect(body.lastName).toBe(toBeSaved.lastName)
-            expect(body.email).toBe(toBeSaved.email)
-            expect(body.phone).toBe(toBeSaved.phone)
+
+            assertFieldsMatch(body, { ...toBeSaved, isCustomer: body.isCustomer, userId: newId })
 
             const statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(newId)}
             `
 
             let returnedUser = statementResponse[0]
-            expect(returnedUser.firstName).toBe(toBeSaved.firstName)
-            expect(returnedUser.lastName).toBe(toBeSaved.lastName)
-            expect(returnedUser.email).toBe(toBeSaved.email)
-            expect(returnedUser.phone).toBe(toBeSaved.phone)
+
+            assertFieldsMatch(returnedUser, body)
         })
 
         it('will return a 400 when the required fields aren\'t present', async () => {
@@ -196,16 +188,13 @@ describe('User Route Integration Tests', () => {
             expect(body.email).not.toBe(initialUser.email)
 
             statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `
 
             const updatedUser = statementResponse[0]
-            expect(updatedUser.firstName).toBe(body.firstName)
-            expect(updatedUser.lastName).toBe(body.lastName)
-            expect(updatedUser.email).toBe(body.email)
-            expect(updatedUser.phone).toBe(body.phone)
+            assertFieldsMatch(updatedUser, body)
         })
 
         it('will update an existing User with a payload for a single field', async () => {
@@ -235,16 +224,13 @@ describe('User Route Integration Tests', () => {
             expect(body.phone).toBe(initialUser.phone)
 
             statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
+                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
                 FROM storefront.users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `
 
             const updatedUser = statementResponse[0]
-            expect(updatedUser.firstName).toBe(body.firstName)
-            expect(updatedUser.lastName).toBe(body.lastName)
-            expect(updatedUser.email).toBe(body.email)
-            expect(updatedUser.phone).toBe(body.phone)
+            assertFieldsMatch(updatedUser, body)
         })
 
         it('will return an error if the User to be updated doesn\'t exist', async () => {
@@ -303,3 +289,4 @@ describe('User Route Integration Tests', () => {
     })
 
 })
+
