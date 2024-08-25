@@ -1,11 +1,11 @@
-import { Database } from "../database.js";
+import { DatabaseUtil } from "../util/DatabaseUtil.js";
 
 class PaymentInfoService {
 
     sql;
 
     constructor() {
-        this.sql = Database.createConnection()
+        this.sql = DatabaseUtil.createConnection()
     }
 
     async getPaymentInfoWithId(paymentInfoId) {

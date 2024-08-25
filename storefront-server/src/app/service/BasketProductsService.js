@@ -1,11 +1,11 @@
-import {Database} from "../database.js";
+import {DatabaseUtil} from "../util/DatabaseUtil.js";
 
 class BasketProductsService {
 
     sql
 
     constructor() {
-        this.sql = Database.createConnection()
+        this.sql = DatabaseUtil.createConnection()
     }
 
     async getProductsInBasket(basketId){

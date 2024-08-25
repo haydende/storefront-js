@@ -1,5 +1,5 @@
 import { Router, json } from 'express'
-import { UserService } from '../util/db/User/UserService.js';
+import { UserService } from '../service/UserService.js';
 
 export const router = Router()
 const userService = new UserService()
@@ -11,9 +11,7 @@ router
     // Retrieve User with ID
     .get('/:id', async (req, res) => {
         const { id } = req.params
-        let queryResponse;
-
-        queryResponse = await userService.getUserWithId(id)
+        let queryResponse = await userService.getUserWithId(id)
 
         if (queryResponse[0]) {
             res
@@ -43,15 +41,15 @@ router
                 firstName, lastName, email, ...otherFields
             })
 
-            if (queryResponse.error) {
-                res
-                    .status(500)
-                    .json(queryResponse)
-
-            } else {
+            if (queryResponse[0]) {
                 res
                     .status(200)
                     .json(queryResponse[0])
+
+            } else {
+                res
+                    .status(500)
+                    .json(queryResponse)
             }
         } else {
             res

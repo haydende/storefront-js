@@ -1,6 +1,6 @@
 import postgres from "postgres";
 
-export class Database {
+export class DatabaseUtil {
 
     static sql;
 

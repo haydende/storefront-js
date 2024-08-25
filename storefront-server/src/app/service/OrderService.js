@@ -1,12 +1,12 @@
 
-import { Database } from '../database.js'
+import { DatabaseUtil } from '../util/DatabaseUtil.js'
 
 class OrderService {
 
     sql;
 
     constructor() {
-        this.sql = Database.createConnection();
+        this.sql = DatabaseUtil.createConnection();
     }
 
     async getOrderWithId(orderId) {
