@@ -1,5 +1,7 @@
 import supertest from 'supertest'
-import { app, sql, assertFieldsMatch, postSuiteSetup, preSuiteSetup, preTestSetup } from "../../test/RoutesTesting.common.js"
+import {
+    app, assertFieldsMatch, postSuiteSetup, preSuiteSetup, preTestSetup, insertUserRecords, insertAddressRecords
+} from "../../test/RoutesTesting.common.js"
 
 describe('Address Route Integration Tests', () => {
 
@@ -32,38 +34,79 @@ describe('Address Route Integration Tests', () => {
             assertFieldsMatch(body, firstAddress)
         })
 
+        it('will return a 404 response when no Addresses exist', async () => {
+
+            const response = await supertest(app)
+                .get('/addresses/1')
+                .send()
+
+            expect(response.statusCode).toBe(404)
+            expect(response.body.error).toBe("Address '1' not found")
+        })
+
+        it('will return a 404 response when no matching Addresses exist', async () => {
+            await insertUserRecords()
+            await insertAddressRecords()
+
+            const response = await supertest(app)
+                .get('/addresses/100')
+                .send()
+
+            expect(response.statusCode).toBe(404)
+            expect(response.body.error).toBe("Address '100' not found")
+        })
     })
 
+    describe('GET /addresses/user/id', () => {
+
+        it('will return the list of addresses associated with User of ID \'1\'', async () => {
+            await insertUserRecords()
+            const userId = 1
+            const addressStatementResult = await insertAddressRecords()
+            const userOneAddresses = addressStatementResult
+                .filter((address) => {
+                    return address.userId == userId
+                })
+
+            const response = await supertest(app)
+                .get(`/addresses/user/${userId}`)
+                .send()
+
+            expect(response.statusCode).toBe(200)
+
+            const returnedAddresses = response.body
+            expect(returnedAddresses.length).toBe(userOneAddresses.length)
+
+            for (let i = 0; i < returnedAddresses.length; i++) {
+                assertFieldsMatch(userOneAddresses[i], returnedAddresses[i])
+            }
+        })
+
+        it('will return a 404 response when the requested User does not exist', async () => {
+            await insertUserRecords()
+            await insertAddressRecords()
+
+            const userId = 300
+
+            const response = await supertest(app)
+                .get(`/addresses/user/${userId }`)
+                .send()
+
+            expect(response.statusCode).toBe(404)
+            expect(response.body.error).toBe(`No Address records found for User with ID '${userId}'`)
+        })
+
+        it('will return a 404 response when the requested User has no Address records', async () => {
+            await insertUserRecords()
+            await insertAddressRecords()
+
+            const userId = 3
+            const response = await supertest(app)
+                .get(`/addresses/user/${userId}`)
+                .send()
+
+            expect(response.statusCode).toBe(404)
+            expect(response.body.error).toBe(`No Address records found for User with ID '${userId}'`)
+        })
+    })
 })
-
-async function insertUserRecords() {
-    return await sql`
-        INSERT INTO storefront.users (first_name, last_name, email, phone)
-        VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
-               ('Jane', 'Doe', 'janedoe@email.com', '123456789')
-        RETURNING user_id "userId",
-                  first_name "firstName",
-                  last_name "lastName",
-                  email, phone;
-    `
-}
-
-async function insertAddressRecords() {
-    return await sql`
-        INSERT INTO storefront.addresses 
-            (user_id, line_1, line_2, city_or_town, state_or_province, postal_code, country, is_default)
-        VALUES 
-            (1, '1 Somewhere Place', null, 'Somewhereville', 'Someshire', 'SM1 2AB', 'United Kingdom', true),
-            (1, '40 Business Park', 'Floor 2', 'Anothertown', 'Someshire', 'SM1 5JD', 'United Kingdom', false),
-            (2, '2b Another Road', null, 'Towntown', 'Countester', 'CD1 2EF', 'United Kingdom', true)
-        RETURNING address_id "addressId",
-                  user_id "userId",
-                  line_1 "line1",
-                  line_2 "line2",
-                  city_or_town "cityOrTown",
-                  state_or_province "stateOrProvince",
-                  postal_code "postalCode",
-                  is_default "isDefault",
-                  country;
-    `
-}

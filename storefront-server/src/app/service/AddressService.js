@@ -48,7 +48,7 @@ export class AddressService {
                        is_default "isDefault",
                        country
                 FROM storefront.addresses
-                WHERE user_id == ${userId}
+                WHERE user_id = ${BigInt(userId)}
             `
         } catch (error) {
             const errorStr = `Error occurred while getting Address for User with ID '${userId}': ${error.message}`

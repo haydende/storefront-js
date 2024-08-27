@@ -24,14 +24,14 @@ router
         } else {
             res
                 .status(404)
-                .json({ error: `Address '${id}' not found!` })
+                .json({ error: `Address '${id}' not found` })
         }
     })
 
     // Retrieve Addresses for User ID
     .get('/user/:id', async (req, res) => {
-        const { userId } = req.params
-        let queryResponse = await addressService.getAddressesForCustomerId(userId)
+        const { id } = req.params
+        let queryResponse = await addressService.getAddressesForCustomerId(id)
 
         if (queryResponse[0]) {
             res
@@ -46,7 +46,7 @@ router
         } else {
             res
                 .status(404)
-                .json({ error: `No Address records found for User with ID '${userId}'` })
+                .json({ error: `No Address records found for User with ID '${id}'` })
         }
     })
 
