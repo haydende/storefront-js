@@ -11,7 +11,7 @@ class ProductService {
     async getProductWithId(productId) {
         return await this.sql`
             SELECT *
-            FROM storefront.products
+            FROM products
             WHERE product_id = ${ BigInt(productId) }
         `
     }
@@ -25,7 +25,7 @@ class ProductService {
         const values = Object.values(product)
 
         return await this.sql`
-            INSERT INTO storefront.products (${ this.sql(product, columns) })
+            INSERT INTO products (${ this.sql(product, columns) })
             VALUES
             ${ this.sql(product, values) }
             RETURNING *
@@ -41,7 +41,7 @@ class ProductService {
         const columns = Object.keys(product)
 
         return await this.sql`
-            UPDATE storefront.products
+            UPDATE products
             SET ${ this.sql(product, columns) }
             WHERE product_id = ${ BigInt(productId) }
             RETURNING *
@@ -51,7 +51,7 @@ class ProductService {
     async deleteProduct(productId) {
         await this.sql`
             DELETE
-            FROM storefront.products
+            FROM products
             WHERE product_id = ${ BigInt(productId) }
         `
     }

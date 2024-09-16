@@ -11,7 +11,7 @@ class BasketService {
     async getBasketForCustomerId(customerId) {
         return await this.sql`
             SELECT * 
-            FROM storefront.baskets
+            FROM baskets
             WHERE customer_id = ${customerId}
         `
     }
@@ -29,7 +29,7 @@ class BasketService {
         const values = Object.values(basket)
 
         return await this.sql`
-            INSERT INTO storefront.baskets (${this.sql(basket, columns)})
+            INSERT INTO baskets (${this.sql(basket, columns)})
             VALUES ${this.sql(basket, values)}
             RETURNING *
         `
@@ -44,7 +44,7 @@ class BasketService {
         const columns = Object.keys(basket)
 
         return await this.sql`
-            UPDATE storefront.baskets
+            UPDATE baskets
             SET ${this.sql(basket, columns)}
             WHERE basket_id = ${BigInt(basketId)}
             RETURNING *
@@ -53,7 +53,7 @@ class BasketService {
 
     async deleteBasket(basketId) {
         await this.sql`
-            DELETE FROM storefront.baskets
+            DELETE FROM baskets
             WHERE basket_id = ${BigInt(basketId)}
         `
     }

@@ -65,7 +65,7 @@ router
                 if (queryResponse[0]) {
                     res
                         .status(200)
-                        .json(queryResponse)
+                        .json(queryResponse[0])
                 } else {
                     res
                         .status(500)
@@ -74,7 +74,7 @@ router
             } else {
                 res
                     .status(400)
-                    .json({ error: `User with id '${userId} does not exist. Please provide a valid UserID.` })
+                    .json({ error: `User with id '${userId}' does not exist. Please provide a valid UserID.` })
             }
         } else {
             res

@@ -11,7 +11,7 @@ class BasketProductsService {
     async getProductsInBasket(basketId){
         return await this.sql`
             SELECT * 
-            FROM storefront.basketproducts
+            FROM basketproducts
             WHERE basket_id = ${basketId}
         `
     }
@@ -29,7 +29,7 @@ class BasketProductsService {
 
         const returnedBasketEntries = await this.sql`
             SELECT *
-            FROM storefront.basketproducts
+            FROM basketproducts
             WHERE basket_id = ${BigInt(basketId)} AND
                   product_id = ${BigInt(productId)}
         `
@@ -43,7 +43,7 @@ class BasketProductsService {
         const values = Object.values(basketProduct)
 
         return await this.sql`
-            INSERT INTO storefront.basketproducts (${this.sql(basketProduct, columns)})
+            INSERT INTO basketproducts (${this.sql(basketProduct, columns)})
             VALUES ${this.sql(basketProduct, values)}
             RETURNING *
         `
@@ -62,7 +62,7 @@ class BasketProductsService {
 
         const returnedBasketQuantity = await this.sql`
             SELECT quantity 
-            FROM storefront.basketproducts
+            FROM basketproducts
             WHERE basket_id = ${BigInt(basketId)} AND
                   product_id = ${BigInt(productId)}
         `
@@ -74,7 +74,7 @@ class BasketProductsService {
         const newQuantity = originalQuantity + quantity
 
         return await this.sql`
-            UPDATE storefront.basketproducts
+            UPDATE basketproducts
             SET quantity = ${newQuantity}
             WHERE basket_id = ${BigInt(basketId)} AND
                   product_id = ${BigInt(productId)}
@@ -84,7 +84,7 @@ class BasketProductsService {
 
     async removeProductFromBasket({basketId, productId}) {
         await this.sql`
-            DELETE FROM storefront.basketproducts
+            DELETE FROM basketproducts
             WHERE basket_id = ${BigInt(basketId)} AND 
                   product_id = ${BigInt(productId)}
         `

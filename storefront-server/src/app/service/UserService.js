@@ -19,7 +19,7 @@ export class UserService {
                        last_name "lastName",
                        is_customer "isCustomer",
                        email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(id)}
             `
         } catch (error) {
@@ -36,7 +36,7 @@ export class UserService {
         try {
             user = convertFieldsToSnakecase(user)
             response = await this.sql`
-                INSERT INTO storefront.users ${this.sql(user)} 
+                INSERT INTO users ${this.sql(user)} 
                 RETURNING user_id "userId",
                           first_name "firstName",
                           last_name "lastName",
@@ -58,7 +58,7 @@ export class UserService {
             user = convertFieldsToSnakecase(user)
             const columns = Object.keys(user)
             return await this.sql`
-                UPDATE storefront.users
+                UPDATE users
                 SET ${this.sql(user, columns)}
                 WHERE user_id = ${BigInt(id)}
                 RETURNING user_id "userId",
@@ -81,7 +81,7 @@ export class UserService {
         let response;
         try {
             await this.sql`
-                DELETE FROM storefront.users
+                DELETE FROM users
                 WHERE user_id = ${BigInt(userId)}
             `
             // As long as the query doesn't yield an error, the requested record should not

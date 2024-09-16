@@ -22,7 +22,7 @@ export class AddressService {
                        postal_code "postalCode",
                        is_default "isDefault",
                        country
-                FROM storefront.addresses
+                FROM addresses
                 WHERE address_id = ${BigInt(id)};
             `
         } catch (error) {
@@ -47,7 +47,7 @@ export class AddressService {
                        postal_code "postalCode",
                        is_default "isDefault",
                        country
-                FROM storefront.addresses
+                FROM addresses
                 WHERE user_id = ${BigInt(userId)}
             `
         } catch (error) {
@@ -64,7 +64,7 @@ export class AddressService {
         try {
             address = convertFieldsToSnakecase(address)
             response = await this.sql`
-                INSERT INTO storefront.addresses ${this.sql(address)}
+                INSERT INTO addresses ${this.sql(address)}
                 RETURNING address_id "addressId",
                           user_id "userId",
                           line_1 "line1",
@@ -90,9 +90,9 @@ export class AddressService {
             address = convertFieldsToSnakecase(address)
             const columns = Object.keys(address)
             response =  await this.sql`
-                UPDATE storefront.addresses 
+                UPDATE addresses 
                 SET ${this.sql(address, columns)}
-                WHERE address_id = ${BigInt(addressId)}
+                WHERE address_id = ${BigInt(id)}
                 RETURNING address_id "addressId",
                           user_id "userId",
                           line_1 "line1",
@@ -104,7 +104,7 @@ export class AddressService {
                           country
             `
         } catch (error) {
-            const errorStr = `Error occurred while updating Address '${id}: ${error.message}`
+            const errorStr = `Error occurred while updating Address '${id}': ${error.message}`
             console.error(errorStr)
             response = { error: errorStr }
         }
@@ -117,7 +117,7 @@ export class AddressService {
         let response
         try {
             await this.sql`
-                DELETE FROM storefront.addresses
+                DELETE FROM addresses
                 WHERE address_id = ${BigInt(addressId)}
             `
             response = { message: `Address '${addressId}' deleted successfully.` }

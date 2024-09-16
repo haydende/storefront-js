@@ -11,7 +11,7 @@ class PaymentInfoService {
     async getPaymentInfoWithId(paymentInfoId) {
         return await this.sql`
             SELECT * 
-            FROM storefront.paymentinfo
+            FROM paymentinfo
             WHERE payment_id = ${paymentInfoId}
         `
     }
@@ -29,7 +29,7 @@ class PaymentInfoService {
         const values = Object.values(paymentInfo)
 
         return await this.sql`
-            INSERT INTO storefront.paymentinfo (${this.sql(paymentInfo, columns)})
+            INSERT INTO paymentinfo (${this.sql(paymentInfo, columns)})
             VALUES ${this.sql(paymentInfo, values)}
             RETURNING *
         `
@@ -44,7 +44,7 @@ class PaymentInfoService {
         const columns = Object.keys(paymentInfo)
 
         return await this.sql`
-            UPDATE storefront.paymentinfo
+            UPDATE paymentinfo
             SET ${this.sql(paymentInfo, columns)}
             WHERE payment_id = ${paymentInfoId}
             RETURNING *
@@ -53,7 +53,7 @@ class PaymentInfoService {
 
     async deletePaymentInfo(paymentInfoId) {
         await this.sql`
-            DELETE FROM storefront.paymentinfo
+            DELETE FROM paymentinfo
             WHERE payment_id = ${paymentInfoId}
         `
     }

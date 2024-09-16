@@ -12,7 +12,7 @@ class OrderService {
     async getOrderWithId(orderId) {
         return await this.sql`
             SELECT * 
-            FROM storefront.orders
+            FROM orders
             WHERE order_id = ${BigInt(orderId)}
         `
     }
@@ -33,7 +33,7 @@ class OrderService {
         const values = Object.values(order)
 
         return this.sql`
-            INSERT INTO storefront.orders (${this.sql(order, columns)})
+            INSERT INTO orders (${this.sql(order, columns)})
             VALUES ${this.sql(order, values)}
             RETURNING *
         `
@@ -48,7 +48,7 @@ class OrderService {
         const columns = Object.keys(order)
 
         return this.sql`
-            UPDATE storefront.orders 
+            UPDATE orders 
             SET ${this.sql(order, columns)}
             WHERE order_id = ${BigInt(orderId)}  
             RETURNING *
@@ -57,7 +57,7 @@ class OrderService {
 
     async deleteOrder(orderId) {
         await this.sql`
-            DELETE FROM storefront.orders
+            DELETE FROM orders
             WHERE order_id = ${BigInt(orderId)}
         `
     }

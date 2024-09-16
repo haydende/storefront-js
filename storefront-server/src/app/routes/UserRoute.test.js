@@ -20,7 +20,7 @@ describe('User Route Integration Tests', () => {
         it('will return the User with the matching ID', async () => {
 
             const statementResponse = await sql`
-                INSERT INTO storefront.users (first_name, last_name, email, phone) 
+                INSERT INTO users (first_name, last_name, email, phone) 
                 VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
                        ('Jane', 'Doe', 'janedoe@email.com', '123456789')
                 RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
@@ -57,7 +57,7 @@ describe('User Route Integration Tests', () => {
         it('will return a 404 response when no matching Users exist', async () => {
 
             const statementResponse = await sql`
-                INSERT INTO storefront.users (first_name, last_name, email, phone) 
+                INSERT INTO users (first_name, last_name, email, phone) 
                 VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
                        ('Jane', 'Doe', 'janedoe@email.com', '123456789')
                 RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
@@ -98,7 +98,7 @@ describe('User Route Integration Tests', () => {
 
             const statementResponse = await sql`
                 SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(newId)};
             `
 
@@ -130,7 +130,7 @@ describe('User Route Integration Tests', () => {
 
             const statementResponse = await sql`
                 SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(newId)}
             `
 
@@ -162,7 +162,7 @@ describe('User Route Integration Tests', () => {
         it('will update an existing User with a payload for all fields', async () => {
 
             let statementResponse = await sql`
-                INSERT INTO storefront.users (first_name, last_name, email, phone)
+                INSERT INTO users (first_name, last_name, email, phone)
                 VALUES ('John', 'Doe', 'johndoe@email.com', '123456789')
                 RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
             `
@@ -189,7 +189,7 @@ describe('User Route Integration Tests', () => {
 
             statementResponse = await sql`
                 SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `
 
@@ -200,7 +200,7 @@ describe('User Route Integration Tests', () => {
         it('will update an existing User with a payload for a single field', async () => {
 
             let statementResponse = await sql`
-                INSERT INTO storefront.users (first_name, last_name, email, phone) 
+                INSERT INTO users (first_name, last_name, email, phone) 
                 VALUES ('John', 'Doe', 'johndoe@email.com', '123456789')
                 RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
             `
@@ -225,7 +225,7 @@ describe('User Route Integration Tests', () => {
 
             statementResponse = await sql`
                 SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `
 
@@ -254,7 +254,7 @@ describe('User Route Integration Tests', () => {
         it('will delete an existing User', async () => {
 
             let statementResponse = await sql`
-                INSERT INTO storefront.users (first_name, last_name, email, phone)
+                INSERT INTO users (first_name, last_name, email, phone)
                 VALUES ('John', 'Doe', 'johnd@email.com', '123456789')
                 RETURNING user_id "userId", first_name "firstName", last_name "lastName", email, phone;
             `
@@ -269,7 +269,7 @@ describe('User Route Integration Tests', () => {
 
             statementResponse = await sql`
                 SELECT user_id "userId", first_name "firstName", last_name "lastName", email, phone
-                FROM storefront.users
+                FROM users
                 WHERE user_id = ${BigInt(toBeDeleted.userId)};
             `
 

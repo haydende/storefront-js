@@ -99,29 +99,39 @@ export async function postSuiteSetup() {
 }
 
 export async function preTestSetup() {
-    await sql`DELETE FROM storefront.addresses`
-    await sql`DELETE FROM storefront.users;`
-    await sql`ALTER SEQUENCE storefront.users_user_id_seq RESTART;`
+    await sql`DELETE FROM orders;`
+    await sql`DELETE FROM basketproducts;`
+    await sql`DELETE FROM baskets;`
+    await sql`DELETE FROM addresses;`
+    await sql`DELETE FROM paymentinfo;`
+    await sql`DELETE FROM products;`
+    await sql`DELETE FROM users;`
+    await sql`ALTER SEQUENCE users_user_id_seq RESTART;`
+    await sql`ALTER SEQUENCE orders_order_id_seq RESTART;`
+    await sql`ALTER SEQUENCE baskets_basket_id_seq RESTART;`
+    await sql`ALTER SEQUENCE addresses_address_id_seq RESTART;`
+    await sql`ALTER SEQUENCE paymentinfo_payment_id_seq RESTART;`
+    await sql`ALTER SEQUENCE products_product_id_seq RESTART;`
 }
 
-export function assertFieldsMatch(objectOne, objectTwo) {
-    const objOneKeys = Object.keys(objectOne)
-    const objTwoKeys = Object.keys(objectTwo)
+export function assertFieldsMatch(expected, actual) {
+    const objOneKeys = Object.keys(expected)
+    const objTwoKeys = Object.keys(actual)
 
-    expect(objOneKeys.length).toEqual(objTwoKeys.length)
+    expect(objTwoKeys.length).toEqual(objOneKeys.length)
     for (const key of objOneKeys) {
-        global.console.debug('RoutesTesting.common :: assertFieldsMatch:', `Comparing objOne.${key}: [${objectOne[key]}], objTwo.${key}: [${objectTwo[key]}]`)
-        expect(objectOne[key]).toBeDefined()
-        expect(objectOne[key]).toEqual(objectTwo[key])
+        global.console.debug('RoutesTesting.common :: assertFieldsMatch:', `Comparing objOne.${key}: [${expected[key]}], objTwo.${key}: [${actual[key]}]`)
+        expect(actual[key]).toBeDefined()
+        expect(actual[key]).toEqual(expected[key])
     }
 }
 
 export async function insertUserRecords() {
     return await sql`
-        INSERT INTO storefront.users (first_name, last_name, email, phone)
+        INSERT INTO users (first_name, last_name, email, phone)
         VALUES ('John', 'Doe', 'johndoe@email.com', '987654321'),
                ('Jane', 'Doe', 'janedoe@email.com', '123456789'),
-               ('Jonah', 'Doe', 'jonahdoe@email.com', '192837465')
+               ('Jonah', 'Smith', 'jonahsmith@email.com', '192837465')
         RETURNING user_id "userId",
                   first_name "firstName",
                   last_name "lastName",
@@ -131,7 +141,7 @@ export async function insertUserRecords() {
 
 export async function insertAddressRecords() {
     return await sql`
-        INSERT INTO storefront.addresses 
+        INSERT INTO Addresses 
             (user_id, line_1, line_2, city_or_town, state_or_province, postal_code, country, is_default)
         VALUES 
             (1, '1 Somewhere Place', null, 'Somewhereville', 'Someshire', 'SM1 2AB', 'United Kingdom', true),
@@ -146,5 +156,66 @@ export async function insertAddressRecords() {
                   postal_code "postalCode",
                   is_default "isDefault",
                   country;
+    `
+}
+
+export async function insertPaymentInfoRecords() {
+    return await sql`
+        INSERT INTO paymentinfo
+            (user_id, method, card_number, expiry_date, cvv, account_number, is_default)
+        VALUES 
+            (1, 'visa', '123456789', ('11', '30')::EXPIRY_DATE, '123', '123456789', true),
+            (1, 'mastercard', '987654321', ('12', '34')::EXPIRY_DATE, '456', '123456789', false),
+            (2, 'visa', '192837456', ('05', '20')::EXPIRY_DATE, '789', '123456789', true)
+        RETURNING payment_id "paymentId",
+                  user_id "userId",
+                  card_number "cardNumber",
+                  expiry_date "expiryDate",
+                  account_number "accountNumber",
+                  is_default "isDefault",
+                  method, cvv;
+    `
+}
+
+export async function insertProductRecords() {
+    return await sql`
+        INSERT INTO products (name, brand, description, price, quantity)
+        VALUES 
+            ('Washing Detergent', 'Washing Co.', 'Washing Detergent to fulfil your washing needs!', 12.00, 600),
+            ('Milk Chocolate Bar', 'Choco', 'A smooth and delicious chocolate bar to satisfy your taste buds', 5.00, 1000),
+            ('Semi-skimmed Milk', 'Farmers Alliance', '4-pint; The freshest of Semi-skimmed milk from your local farmers', 1.00, 2400)
+        RETURNING product_id "productId", name, brand, description, price, quantity;
+    `
+}
+
+export async function insertBasketRecords() {
+    return await sql`
+        INSERT INTO baskets (user_id, date_created, status)
+        VALUES (1, NOW(), 'open'),
+               (1, 12-09-2022, 'complete'),
+               (2, 03-01-2024, 'complete'),
+               (2, NOW() - 1, 'open')
+        RETURNING basket_id "basketId", user_id "userId", date_created "dateCreated", status;
+    `
+}
+
+export async function insertBasketProductRecords() {
+    return await sql`
+        INSERT INTO basketproducts (basket_id, product_id, quantity)
+        VALUES (1, 1, 2),
+               (1, 2, 1),
+               (1, 3, 2),
+               (4, 3, 2),
+               (4, 1, 4)
+        RETURNING basket_id "basketId", product_id "productId", quantity;
+    `
+}
+
+export async function insertOrderRecords() {
+    return await sql`
+        INSERT INTO orders (basket_id, address_id, payment_info_id)
+        VALUES (2, 1, 2),
+               (3, 3, 3)
+        RETURNING basket_id "basketId", address_id "addressId", payment_info_id "paymentInfoId";
     `
 }
