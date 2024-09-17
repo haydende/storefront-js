@@ -1,5 +1,15 @@
 import supertest from 'supertest'
-import { app, assertFieldsMatch, postSuiteSetup, preSuiteSetup, preTestSetup, insertUserRecords, insertAddressRecords, sql } from "../../test/RoutesTesting.common.js"
+import {
+    app,
+    assertFieldsMatch,
+    postSuiteSetup,
+    preSuiteSetup,
+    preTestSetup,
+    insertUserRecords,
+    insertAddressRecords,
+    sql,
+    insertOrderRecords, insertBasketRecords, insertPaymentInfoRecords
+} from "../../test/RoutesTesting.common.js"
 
 describe('Address Route Integration Tests', () => {
 
@@ -341,9 +351,10 @@ describe('Address Route Integration Tests', () => {
     describe('DELETE /addresses/id', () => {
 
         // TODO: Insert records that reference the one to be deleted
-        it.skip('will delete the Address record when there are no references to this record in the database', async () => {
+        it('will delete the Address record when there are no references to this record in the database', async () => {
             await insertUserRecords()
             const insertedAddressRecords = await insertAddressRecords()
+
             const addressOne = insertedAddressRecords[0]
 
             const response = await supertest(app)
@@ -360,5 +371,40 @@ describe('Address Route Integration Tests', () => {
             expect(queryResponse.length).toBe(0)
         })
 
+        it('will return an error when there are other records that reference the specified Address', async () => {
+            await insertUserRecords()
+            const insertedAddressRecords = await insertAddressRecords()
+            await insertBasketRecords()
+            await insertPaymentInfoRecords()
+            await insertOrderRecords()
+
+            const addressOne = insertedAddressRecords[0]
+
+            const response = await supertest(app)
+                .delete(`/addresses/${addressOne.addressId}`)
+                .send()
+
+            expect(response.statusCode).toBe(500)
+            expect(response.body.error)
+                .toBe(`Error occurred when deleting Address '${addressOne.addressId}': update or delete on table "addresses" violates foreign key constraint "orders_address_id_fkey" on table "orders"`)
+
+            const queryResponse = await sql`
+                SELECT address_id
+                FROM addresses
+                WHERE address_id = ${BigInt(addressOne.addressId)};
+            `
+            expect(queryResponse.length).toBe(1)
+        })
+
+        it('won\'t error if the address to be deleted does not exist', async () => {
+            await insertUserRecords()
+
+            const response = await supertest(app)
+                .delete("/addresses/1")
+                .send()
+
+            expect(response.statusCode).toBe(200)
+
+        })
     })
 })

@@ -192,9 +192,9 @@ export async function insertBasketRecords() {
     return await sql`
         INSERT INTO baskets (user_id, date_created, status)
         VALUES (1, NOW(), 'open'),
-               (1, 12-09-2022, 'complete'),
-               (2, 03-01-2024, 'complete'),
-               (2, NOW() - 1, 'open')
+               (1, '12-09-2022', 'complete'),
+               (2, '03-01-2024', 'complete'),
+               (2, NOW(), 'open')
         RETURNING basket_id "basketId", user_id "userId", date_created "dateCreated", status;
     `
 }
