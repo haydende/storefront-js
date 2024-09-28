@@ -1,6 +1,7 @@
 import { DatabaseUtil } from "../util/DatabaseUtil.js";
+import { convertFieldsToSnakecase } from "../util/StringUtil.js";
 
-class ProductService {
+export class ProductService {
 
     sql
 
@@ -9,51 +10,75 @@ class ProductService {
     }
 
     async getProductWithId(productId) {
-        return await this.sql`
-            SELECT *
-            FROM products
-            WHERE product_id = ${ BigInt(productId) }
-        `
+        let response
+        try {
+            response = await this.sql`
+                SELECT product_id "productId", name, brand,
+                       description, price, quantity
+                FROM products
+                WHERE product_id = ${BigInt(productId)};
+            `
+        } catch (error) {
+            const errorStr = `Error occurred while getting Product with ID '${productId}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
+        }
+        return response
     }
 
     async createProduct(product) {
-        if (product.productId) {
-            throw new Error('Provided Product contains an ID.')
+
+        let response
+        try {
+            product = convertFieldsToSnakecase(product)
+            response = await this.sql`
+                INSERT INTO products (${this.sql(product)})
+                RETURNING product_id "productId", name, brand,
+                          description, price, quantity;
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when inserting a new Product record: ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
         }
-
-        const columns = Object.keys(product)
-        const values = Object.values(product)
-
-        return await this.sql`
-            INSERT INTO products (${ this.sql(product, columns) })
-            VALUES
-            ${ this.sql(product, values) }
-            RETURNING *
-        `
+        return response
     }
 
-    async updateProduct({productId, ...otherProductFields}) {
-        if (!productId) {
-            throw new Error('Provided Product does not contain an ID.')
+    async updateProduct(id, product) {
+
+        let response
+        try {
+            product = convertFieldsToSnakecase(product)
+            const columns = Object.keys(product)
+            response = await this.sql`
+                UPDATE products 
+                SET ${this.sql(product, columns)}
+                WHERE product_id = ${BigInt(id)}
+                RETURNING product_id "productId", name, brand,
+                          description, price, quantity;
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when updating a Product '${id}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
         }
-
-        const product = {productId, ...otherProductFields}
-        const columns = Object.keys(product)
-
-        return await this.sql`
-            UPDATE products
-            SET ${ this.sql(product, columns) }
-            WHERE product_id = ${ BigInt(productId) }
-            RETURNING *
-        `
+        return response
     }
 
     async deleteProduct(productId) {
-        await this.sql`
-            DELETE
-            FROM products
-            WHERE product_id = ${ BigInt(productId) }
-        `
+
+        let response
+        try {
+            await this.sql`
+                DELETE FROM products
+                WHERE product_id = ${BigInt(productId)}
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when deleting Product '${productId}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
+        }
+        return response
     }
 
 }

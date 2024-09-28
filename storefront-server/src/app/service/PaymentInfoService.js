@@ -1,6 +1,7 @@
 import { DatabaseUtil } from "../util/DatabaseUtil.js";
+import { convertFieldsToSnakecase } from "../util/StringUtil.js";
 
-class PaymentInfoService {
+export class PaymentInfoService {
 
     sql;
 
@@ -16,39 +17,70 @@ class PaymentInfoService {
         `
     }
 
-    async createPaymentInfo({paymentInfoId, customerId, ...otherFields}) {
-        if (paymentInfoId) {
-            throw new Error('Provided Payment Info contains an ID.')
-        }
-        if (!customerId) {
-            throw new Error('Provided Payment Info contains no Customer ID.')
-        }
-
-        const paymentInfo = { paymentInfoId, customerId, ...otherFields }
-        const columns = Object.keys(paymentInfo)
-        const values = Object.values(paymentInfo)
-
+    async getPaymentInfoForUserId(userId) {
         return await this.sql`
-            INSERT INTO paymentinfo (${this.sql(paymentInfo, columns)})
-            VALUES ${this.sql(paymentInfo, values)}
-            RETURNING *
+            SELECT payment_id "paymentId",
+                   user_id "userId",
+                   method,
+                   card_number "cardNumber",
+                   expiry_date "expiryDate",
+                   cvv,
+                   account_number "accountNumber",
+                   is_default "isDefault"
+            FROM paymentinfo
+            WHERE user_id = ${userId};
         `
     }
 
-    async updatePaymentInfo({paymentInfoId, ...otherFields}) {
-        if (!paymentInfoId) {
-            throw new Error('Provided Payment Info does not contain an ID.')
+    async createPaymentInfo(paymentInfo) {
+        let response
+        try {
+            paymentInfo = convertFieldsToSnakecase(paymentInfo)
+            const columns = Object.keys(paymentInfo)
+            const values = Object.values(paymentInfo)
+
+            response = await this.sql`
+                INSERT INTO paymentinfo (${this.sql(paymentInfo, columns)})
+                VALUES ${this.sql(paymentInfo, values)}
+                RETURNING payment_id "paymentId",
+                          user_id "userId",
+                          method,
+                          card_number "cardNumber",
+                          expiry_date "expiryDate",
+                          cvv,
+                          account_number "accountNumber",
+                          is_default "isDefault"
+            `
+        } catch (error) {
+            let errorStr = `Error occurred while inserting new PaymentInfo record: ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
         }
+        return response
+    }
 
-        const paymentInfo = { paymentInfoId, ...otherFields }
-        const columns = Object.keys(paymentInfo)
+    async updatePaymentInfo(id, paymentInfo) {
 
-        return await this.sql`
-            UPDATE paymentinfo
-            SET ${this.sql(paymentInfo, columns)}
-            WHERE payment_id = ${paymentInfoId}
-            RETURNING *
-        `
+        let response
+        try {
+            paymentInfo = convertFieldsToSnakecase(paymentInfo)
+            response = await this.sql`
+                INSERT INTO paymentinfo (${this.sql(paymentInfo)})
+                RETURNING payment_id "paymentId",
+                          user_id "userId",
+                          method,
+                          card_number "cardNumber",
+                          expiry_date "expiryDate",
+                          cvv,
+                          account_number "accountNumber",
+                          is_default "isDefault"
+            `
+        } catch (error) {
+            let errorStr = `Error occurred while updating PaymentInfo record: ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
+        }
+        return response
     }
 
     async deletePaymentInfo(paymentInfoId) {

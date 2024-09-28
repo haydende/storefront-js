@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS Products (
     name VARCHAR NOT NULL,
     brand VARCHAR NOT NULL,
     description VARCHAR,
-    price MONEY,
+    price MONEY NOT NULL,
     quantity BIGINT NOT NULL
 );
 
