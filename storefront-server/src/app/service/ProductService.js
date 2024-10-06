@@ -66,7 +66,6 @@ export class ProductService {
     }
 
     async deleteProduct(productId) {
-
         let response
         try {
             await this.sql`
