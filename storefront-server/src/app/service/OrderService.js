@@ -1,7 +1,8 @@
 
 import { DatabaseUtil } from '../util/DatabaseUtil.js'
+import { convertFieldsToSnakecase } from "../util/StringUtil.js";
 
-class OrderService {
+export class OrderService {
 
     sql;
 
@@ -10,56 +11,80 @@ class OrderService {
     }
 
     async getOrderWithId(orderId) {
-        return await this.sql`
-            SELECT * 
-            FROM orders
-            WHERE order_id = ${BigInt(orderId)}
-        `
+        let response
+        try {
+            response = await this.sql`
+                SELECT order_id "orderId",
+                       address_id "addressId",
+                       basket_id "basketId",
+                       payment_info_id "paymentInfoId"
+                FROM orders
+                WHERE order_id = ${BigInt(orderId)}
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when getting Order with id '${orderId}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
+        }
+        return response
     }
 
-    async createOrder({ orderId, basketId, customerId, ...otherFields }) {
-        if (orderId) {
-            throw new Error('Provided Order contains an ID')
+    async createOrder(order) {
+        let response
+        try {
+            order = convertFieldsToSnakecase(order)
+            response = this.sql`
+                INSERT INTO orders (${this.sql(order)})
+                RETURNING order_id "orderId",
+                          address_id "addressId",
+                          basket_id "basketId",
+                          payment_info_id "paymentInfoId"
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when creating new Order: ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
         }
-        if (!basketId) {
-            throw new Error('Provided Order does not contain a Basket ID.')
-        }
-        if (!customerId) {
-            throw new Error('Provided Order does not contain a Customer ID.')
-        }
-
-        const order = { basketId, customerId, ...otherFields };
-        const columns = Object.keys(order)
-        const values = Object.values(order)
-
-        return this.sql`
-            INSERT INTO orders (${this.sql(order, columns)})
-            VALUES ${this.sql(order, values)}
-            RETURNING *
-        `
+        return response
     }
 
-    async updateOrder({ orderId, ...otherFields}){
-        if (!orderId) {
-            throw new Error('Provided Order does not contain an ID')
+    async updateOrder(id, order){
+        let response
+        try {
+            order = convertFieldsToSnakecase(order)
+            const columns = Object.keys(order)
+
+            response = this.sql`
+                UPDATE orders 
+                SET ${this.sql(order, columns)}
+                WHERE order_id = ${BigInt(id)}  
+                RETURNING order_id "orderId",
+                          address_id "addressId",
+                          basket_id "basketId",
+                          payment_info_id "paymentInfoId"
+            `
+        } catch (error) {
+            const errorStr = `Error occurred when updating Order '${id}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
         }
-
-        const order = { orderId, ...otherFields }
-        const columns = Object.keys(order)
-
-        return this.sql`
-            UPDATE orders 
-            SET ${this.sql(order, columns)}
-            WHERE order_id = ${BigInt(orderId)}  
-            RETURNING *
-        `
+        return response
     }
 
     async deleteOrder(orderId) {
-        await this.sql`
-            DELETE FROM orders
-            WHERE order_id = ${BigInt(orderId)}
-        `
+        let response
+        try {
+            await this.sql`
+                DELETE FROM orders
+                WHERE order_id = ${BigInt(orderId)}
+            `
+            response = { message: `Order '${orderId}' successfully removed` }
+        } catch (error) {
+            const errorStr = `Error occurred when deleting Order '${orderId}': ${error.message}`
+            console.error(errorStr)
+            response = { error: errorStr }
+        }
+        return response
     }
 
 }
