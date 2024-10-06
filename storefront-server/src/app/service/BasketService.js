@@ -99,7 +99,7 @@ export class BasketService {
 
                     await this.sql`
                         UPDATE basketproducts
-                        SET quantity = ${quantity}
+                        SET quantity = ${BigInt(quantity)}
                         WHERE basket_id = ${BigInt(basketId)} AND
                               product_id = ${BigInt(productId)}
                     `
@@ -131,6 +131,7 @@ export class BasketService {
         let response
         try {
             basket = convertFieldsToSnakecase(basket)
+            const columns = Object.keys(basket)
             response = await this.sql`
                 UPDATE baskets
                 SET ${this.sql(basket, columns)}
