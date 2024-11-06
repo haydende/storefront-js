@@ -25,7 +25,7 @@ export class UserService {
         } catch (error) {
             const errorStr = `Error occurred while getting User with ID '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -46,7 +46,7 @@ export class UserService {
         } catch (error) {
             const errorStr  = `Error occurred when inserting new User record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -70,7 +70,7 @@ export class UserService {
         } catch (error) {
             const errorStr = `Error occurred when updating User '${id}: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
 
         return response
@@ -90,7 +90,7 @@ export class UserService {
         } catch (error) {
             const errorStr = `Error occurred when deleting User '${userId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
 
         return response

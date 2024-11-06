@@ -21,7 +21,7 @@ export class ProductService {
         } catch (error) {
             const errorStr = `Error occurred while getting Product with ID '${productId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -39,7 +39,7 @@ export class ProductService {
         } catch (error) {
             const errorStr = `Error occurred when inserting a new Product record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -60,7 +60,7 @@ export class ProductService {
         } catch (error) {
             const errorStr = `Error occurred when updating a Product '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -75,7 +75,7 @@ export class ProductService {
         } catch (error) {
             const errorStr = `Error occurred when deleting Product '${productId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }

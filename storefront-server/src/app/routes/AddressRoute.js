@@ -1,6 +1,8 @@
 import { Router, json } from 'express'
 import { AddressService } from "../service/AddressService.js"
 import { UserService } from "../service/UserService.js";
+import { handleError } from "./Routes.common.js";
+import postgres from "postgres";
 
 export const router = Router()
 const addressService = new AddressService()
@@ -17,10 +19,10 @@ router
             res
                 .status(200)
                 .json(queryResponse[0])
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
+
         } else {
             res
                 .status(404)
@@ -38,10 +40,8 @@ router
                 .status(200)
                 .json(queryResponse)
 
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof PostgresError) {
+            handleError(res, queryResponse)
 
         } else {
             res
@@ -66,10 +66,9 @@ router
                     res
                         .status(200)
                         .json(queryResponse[0])
+
                 } else {
-                    res
-                        .status(500)
-                        .json(queryResponse)
+                    handleError(res, queryResponse)
                 }
             } else {
                 res
@@ -97,10 +96,9 @@ router
                 res
                     .status(200)
                     .json(queryResponse[0])
+
             } else {
-                res
-                    .status(500)
-                    .json(queryResponse)
+                handleError(res, queryResponse)
             }
         } else {
             res
@@ -111,10 +109,14 @@ router
 
     .delete('/:id', async (req, res) => {
         const { id } = req.params
-
         const queryResponse = await addressService.deleteAddress(id)
 
-        res
-            .status(queryResponse.message ? 200 : 500)
-            .json(queryResponse)
+        if (!queryResponse instanceof PostgresError) {
+            res
+                .status(200)
+                .json(queryResponse)
+
+        } else {
+            handleError(res, queryResponse)
+        }
     })

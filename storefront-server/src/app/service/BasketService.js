@@ -27,7 +27,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred while getting the Basket with ID '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -50,7 +50,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred while getting Baskets for User with ID '${userId}: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -70,7 +70,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred while insert a new Basket record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -122,7 +122,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred while adding Quantity: ${quantity}, Product ID: '${productId}' to Basket '${basketId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -142,7 +142,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred when updating Basket '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -158,7 +158,7 @@ export class BasketService {
         } catch (error) {
             const errorStr = `Error occurred when deleting Basket '${basketId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }

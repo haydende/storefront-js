@@ -1,6 +1,8 @@
-import { json } from "express";
+import { json, Router } from "express";
 import { BasketService } from "../service/BasketService.js";
 import { UserService } from "../service/UserService.js";
+import postgres from "postgres";
+import { handleError } from "./Routes.common.js";
 
 export const router = Router()
 const basketService = new BasketService()
@@ -18,10 +20,8 @@ router
                 .status(200)
                 .json(queryResponse[0])
 
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
 
         } else {
             res
@@ -39,10 +39,8 @@ router
                 .status(200)
                 .json(queryResponse)
 
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof PostgresError) {
+            handleError(res, queryResponse)
 
         } else {
             res
@@ -59,9 +57,15 @@ router
             const basketMatch = await basketService.getBasketWithId(id)
             if (basketMatch[0]) {
                 const queryResponse = await basketService.addItemToBasket(id, productId, quantity)
-                res
-                    .status(queryResponse.message ? 200 : 500)
-                    .json(queryResponse)
+
+                if (queryResponse instanceof PostgresError) {
+                    res
+                        .status(200)
+                        .json(queryResponse)
+
+                } else {
+                    handleError(res, queryResponse)
+                }
             }
 
         } else {
@@ -87,9 +91,7 @@ router
                         .json(queryResponse)
 
                 } else {
-                    res
-                        .status(500)
-                        .json(queryResponse)
+                    handleError(res, queryResponse)
                 }
             }
 
@@ -114,9 +116,7 @@ router
                     .json(queryResponse[0])
 
             } else {
-                res
-                    .status(500)
-                    .json(queryResponse)
+                handleError(res, queryResponse)
             }
 
         } else {
@@ -130,7 +130,12 @@ router
         const { id } = req.params
         const queryResponse = await basketService.deleteBasket(id)
 
-        res
-            .status(queryResponse.message ? 200 : 500)
-            .json(queryResponse)
+        if (!queryResponse.code) {
+            res
+                .status(200)
+                .json(queryResponse)
+
+        } else {
+            handleError(res, queryResponse)
+        }
     })

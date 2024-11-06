@@ -24,7 +24,7 @@ export class OrderService {
         } catch (error) {
             const errorStr = `Error occurred when getting Order with id '${orderId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -33,8 +33,8 @@ export class OrderService {
         let response
         try {
             order = convertFieldsToSnakecase(order)
-            response = this.sql`
-                INSERT INTO orders (${this.sql(order)})
+            response = await this.sql`
+                INSERT INTO orders ${this.sql(order)}
                 RETURNING order_id "orderId",
                           address_id "addressId",
                           basket_id "basketId",
@@ -43,7 +43,7 @@ export class OrderService {
         } catch (error) {
             const errorStr = `Error occurred when creating new Order: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -66,7 +66,7 @@ export class OrderService {
         } catch (error) {
             const errorStr = `Error occurred when updating Order '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -82,7 +82,7 @@ export class OrderService {
         } catch (error) {
             const errorStr = `Error occurred when deleting Order '${orderId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }

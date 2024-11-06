@@ -1,5 +1,7 @@
 import { Router, json } from 'express'
-import { ProductService } from '../service/ProductService'
+import { ProductService } from '../service/ProductService.js'
+import postgres from "postgres";
+import { handleError } from "./Routes.common.js";
 
 export const router = Router()
 const productService = new ProductService()
@@ -17,10 +19,8 @@ router
                 .status(200)
                 .json(queryResponse[0])
 
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
 
         } else {
             res
@@ -45,9 +45,7 @@ router
                     .json(queryResponse[0])
 
             } else {
-                res
-                    .status(500)
-                    .json(queryResponse)
+                handleError(res, queryResponse)
             }
         } else {
             res
@@ -64,14 +62,13 @@ router
         const userMatch = await productService.getUserWithId(id)
         if (typeof userMatch[0] === "object") {
             queryResponse = await productService.updateProduct(id, { otherFields })
-            if (queryResponse.error) {
-                res
-                    .status(500)
-                    .json(queryResponse)
-            } else if (queryResponse[0]) {
+            if (queryResponse[0]) {
                 res
                     .status(200)
                     .json(queryResponse)
+
+            } else {
+                handleError(res, queryResponse)
             }
         } else {
             res
@@ -86,7 +83,12 @@ router
         let queryResponse;
             queryResponse = await productService.deleteUser(id)
 
-        res
-            .status(queryResponse.message ? 200 : 500)
-            .json(queryResponse)
+        if (!queryResponse instanceof PostgresError) {
+            res
+                .status(200)
+                .json(queryResponse)
+
+        } else {
+            handleError(res, queryResponse)
+        }
     })

@@ -1,6 +1,8 @@
 import { Router, json } from 'express';
-import { PaymentInfoService } from '../service/PaymentInfoService';
+import { PaymentInfoService } from '../service/PaymentInfoService.js';
 import { UserService } from "../service/UserService.js";
+import postgres from "postgres";
+import { handleError } from "./Routes.common.js";
 
 export const router = Router()
 const userService = new UserService();
@@ -16,10 +18,10 @@ router
             res
                 .status(200)
                 .json(queryResponse[0])
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
+
         } else {
             res
             .status(404)
@@ -35,10 +37,9 @@ router
             res
                 .status(200)
                 .json(queryResponse)
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
+
         } else {
             res
                 .status(404)
@@ -62,9 +63,8 @@ router
                         .status(200)
                         .json(queryResponse[0])
                 } else {
-                    res
-                        .status(500)
-                        .json(queryResponse)
+                    handleError(res, queryResponse)
+
                 }
             } else {
                 res
@@ -92,9 +92,7 @@ router
                     .status(200)
                     .json(queryResponse[0])
             } else {
-                res
-                    .status(500)
-                    .json(queryResponse)
+                handleError(res, queryResponse)
             }
         } else {
             res
@@ -107,8 +105,13 @@ router
         const { id } = req.params
         const queryResponse = await paymentInfoService.deletePaymentInfo(id)
 
-        res
-            .status(queryResponse.message ? 200 : 500)
-            .json(queryResponse)
+        if (!queryResponse instanceof postgres.PostgresError) {
+            res
+                .status(200)
+                .json(queryResponse)
+
+        } else {
+            handleError(res, queryResponse)
+        }
     })
 

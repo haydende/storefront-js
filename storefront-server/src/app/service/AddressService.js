@@ -28,7 +28,7 @@ export class AddressService {
         } catch (error) {
             const errorStr = `Error occurred while getting Address with ID '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -53,7 +53,7 @@ export class AddressService {
         } catch (error) {
             const errorStr = `Error occurred while getting Address for User with ID '${userId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -78,7 +78,7 @@ export class AddressService {
         } catch (error) {
             let errorStr = `Error occurred while inserting new Address record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -106,7 +106,7 @@ export class AddressService {
         } catch (error) {
             const errorStr = `Error occurred while updating Address '${id}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
 
         return response
@@ -124,7 +124,7 @@ export class AddressService {
         } catch (error) {
             const errorStr = `Error occurred when deleting Address '${addressId}': ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
 
         return response

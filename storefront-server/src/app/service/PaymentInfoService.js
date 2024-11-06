@@ -40,7 +40,7 @@ export class PaymentInfoService {
             const values = Object.values(paymentInfo)
 
             response = await this.sql`
-                INSERT INTO paymentinfo (${this.sql(paymentInfo, columns)})
+                INSERT INTO paymentinfo ${this.sql(paymentInfo)}
                 VALUES ${this.sql(paymentInfo, values)}
                 RETURNING payment_id "paymentId",
                           user_id "userId",
@@ -54,7 +54,7 @@ export class PaymentInfoService {
         } catch (error) {
             let errorStr = `Error occurred while inserting new PaymentInfo record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
@@ -78,7 +78,7 @@ export class PaymentInfoService {
         } catch (error) {
             let errorStr = `Error occurred while updating PaymentInfo record: ${error.message}`
             console.error(errorStr)
-            response = { error: errorStr }
+            response = error
         }
         return response
     }
