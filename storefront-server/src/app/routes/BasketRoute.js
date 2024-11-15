@@ -39,7 +39,7 @@ router
                 .status(200)
                 .json(queryResponse)
 
-        } else if (queryResponse instanceof PostgresError) {
+        } else if (queryResponse instanceof postgres.PostgresError) {
             handleError(res, queryResponse)
 
         } else {
@@ -58,7 +58,7 @@ router
             if (basketMatch[0]) {
                 const queryResponse = await basketService.addItemToBasket(id, productId, quantity)
 
-                if (queryResponse instanceof PostgresError) {
+                if (queryResponse instanceof postgres.PostgresError) {
                     res
                         .status(200)
                         .json(queryResponse)

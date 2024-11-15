@@ -29,7 +29,6 @@ router
         }
     })
 
-
     .get('/user/:id', async (req, res) => {
         const { id } = req.params
         let queryResponse = await paymentInfoService.getPaymentInfoForUserId(id)

@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS Users (
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
     email VARCHAR NOT NULL,
-    phone VARCHAR
+    phone VARCHAR,
+    profile_pic_base64 TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Addresses (

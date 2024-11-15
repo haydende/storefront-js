@@ -384,9 +384,9 @@ describe('Address Route Integration Tests', () => {
                 .delete(`/addresses/${addressOne.addressId}`)
                 .send()
 
-            expect(response.statusCode).toBe(500)
-            expect(response.body.error)
-                .toBe(`Error occurred when deleting Address '${addressOne.addressId}': update or delete on table "addresses" violates foreign key constraint "orders_address_id_fkey" on table "orders"`)
+            expect(response.statusCode).toBe(400)
+            expect(response.body.detail)
+                .toBe(`Key (address_id)=(${addressOne.addressId}) is still referenced from table "orders".`)
 
             const queryResponse = await sql`
                 SELECT address_id

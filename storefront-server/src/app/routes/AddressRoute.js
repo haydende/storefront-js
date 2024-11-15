@@ -40,7 +40,7 @@ router
                 .status(200)
                 .json(queryResponse)
 
-        } else if (queryResponse instanceof PostgresError) {
+        } else if (queryResponse instanceof postgres.PostgresError) {
             handleError(res, queryResponse)
 
         } else {
@@ -111,7 +111,7 @@ router
         const { id } = req.params
         const queryResponse = await addressService.deleteAddress(id)
 
-        if (!queryResponse instanceof PostgresError) {
+        if (!(queryResponse instanceof postgres.PostgresError)) {
             res
                 .status(200)
                 .json(queryResponse)
