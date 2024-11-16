@@ -94,10 +94,15 @@ describe('User Route Integration Tests', () => {
             const body = response.body
             const newId = body.userId
 
-            assertFieldsMatch(body, { userId: newId, ...toBeSaved})
+            assertFieldsMatch(body, { userId: newId, profilePic: null, ...toBeSaved})
 
             const statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
+                SELECT user_id "userId",
+                       first_name "firstName",
+                       last_name "lastName",
+                       is_customer "isCustomer",
+                       profile_pic_base64 "profilePic",
+                       email, phone
                 FROM users
                 WHERE user_id = ${BigInt(newId)};
             `
@@ -126,10 +131,15 @@ describe('User Route Integration Tests', () => {
             const body = response.body
             const newId = body.userId
 
-            assertFieldsMatch(body, { ...toBeSaved, isCustomer: body.isCustomer, userId: newId })
+            assertFieldsMatch(body, { ...toBeSaved, isCustomer: body.isCustomer, profilePic: null, userId: newId })
 
             const statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
+                SELECT user_id "userId",
+                       first_name "firstName",
+                       last_name "lastName",
+                       is_customer "isCustomer",
+                       profile_pic_base64 "profilePic",
+                       email, phone
                 FROM users
                 WHERE user_id = ${BigInt(newId)}
             `
@@ -188,7 +198,12 @@ describe('User Route Integration Tests', () => {
             expect(body.email).not.toBe(initialUser.email)
 
             statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
+                SELECT user_id "userId",
+                       first_name "firstName",
+                       last_name "lastName",
+                       is_customer "isCustomer",
+                       profile_pic_base64 "profilePic",
+                       email, phone
                 FROM users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `
@@ -224,7 +239,12 @@ describe('User Route Integration Tests', () => {
             expect(body.phone).toBe(initialUser.phone)
 
             statementResponse = await sql`
-                SELECT user_id "userId", first_name "firstName", last_name "lastName", is_customer "isCustomer", email, phone
+                SELECT user_id "userId",
+                       first_name "firstName",
+                       last_name "lastName",
+                       is_customer "isCustomer",
+                       profile_pic_base64 "profilePic",
+                       email, phone
                 FROM users
                 WHERE user_id = ${BigInt(initialUser.userId)}
             `

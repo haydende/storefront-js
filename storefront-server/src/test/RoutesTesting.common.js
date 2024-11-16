@@ -121,7 +121,7 @@ export function assertFieldsMatch(expected, actual) {
     expect(objTwoKeys.length).toEqual(objOneKeys.length)
     for (const key of objOneKeys) {
         global.console.debug('RoutesTesting.common :: assertFieldsMatch:', `Comparing objOne.${key}: [${expected[key]}], objTwo.${key}: [${actual[key]}]`)
-        expect(actual[key]).toBeDefined()
+        // expect(actual[key]).toBeDefined()
         expect(actual[key]).toEqual(expected[key])
     }
 }

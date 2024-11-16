@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS Products (
     name VARCHAR NOT NULL,
     brand VARCHAR NOT NULL,
     description VARCHAR,
+    image_base64 TEXT,
     price MONEY NOT NULL,
     quantity BIGINT NOT NULL
 );

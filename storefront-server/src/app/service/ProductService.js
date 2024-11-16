@@ -13,7 +13,9 @@ export class ProductService {
         let response
         try {
             response = await this.sql`
-                SELECT product_id "productId", name, brand,
+                SELECT product_id "productId",
+                       image_base64 "image",
+                       name, brand,
                        description, price, quantity
                 FROM products
                 WHERE product_id = ${BigInt(productId)};
@@ -33,7 +35,9 @@ export class ProductService {
             product = convertFieldsToSnakecase(product)
             response = await this.sql`
                 INSERT INTO products (${this.sql(product)})
-                RETURNING product_id "productId", name, brand,
+                RETURNING product_id "productId",
+                          image_base64 "image",
+                          name, brand,
                           description, price, quantity;
             `
         } catch (error) {
@@ -54,7 +58,9 @@ export class ProductService {
                 UPDATE products 
                 SET ${this.sql(product, columns)}
                 WHERE product_id = ${BigInt(id)}
-                RETURNING product_id "productId", name, brand,
+                RETURNING product_id "productId",
+                          image_base64 "image",
+                          name, brand,
                           description, price, quantity;
             `
         } catch (error) {

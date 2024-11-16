@@ -18,6 +18,7 @@ export class UserService {
                        first_name "firstName",
                        last_name "lastName",
                        is_customer "isCustomer",
+                       profile_pic_base64 "profilePic",
                        email, phone
                 FROM users
                 WHERE user_id = ${BigInt(id)}
@@ -41,6 +42,7 @@ export class UserService {
                           first_name "firstName",
                           last_name "lastName",
                           is_customer "isCustomer",
+                          profile_pic_base64 "profilePic",
                           email, phone;
             `
         } catch (error) {
@@ -65,6 +67,7 @@ export class UserService {
                           first_name "firstName",
                           last_name "lastName",
                           is_customer "isCustomer",
+                          profile_pic_base64 "profilePic",
                           email, phone
             `
         } catch (error) {
