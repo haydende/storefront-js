@@ -1,5 +1,6 @@
 import supertest from "supertest";
 import { app, sql, assertFieldsMatch, postSuiteSetup, preSuiteSetup, preTestSetup } from "../../test/RoutesTesting.common.js";
+import postgres from "postgres";
 
 describe('User Route Integration Tests', () => {
 
@@ -189,8 +190,8 @@ describe('User Route Integration Tests', () => {
                 .put(`/users/${initialUser.userId}`)
                 .send(updatedFields)
 
-            const body = response.body[0]
-            expect(body.error).toBeFalsy()
+            const body = response.body
+            expect(body instanceof postgres.PostgresError).toBeFalsy()
             expect(response.statusCode).toBe(200)
             expect(body.firstName).not.toBe(initialUser.firstName)
             expect(body.lastName).not.toBe(initialUser.lastName)
@@ -230,8 +231,8 @@ describe('User Route Integration Tests', () => {
                 .put(`/users/${initialUser.userId}`)
                 .send(updatedFields)
 
-            const body = response.body[0]
-            expect(body.error).toBeFalsy()
+            const body = response.body
+            expect(body instanceof postgres.PostgresError).toBeFalsy()
             expect(response.statusCode).toBe(200)
             expect(body.firstName).toBe(initialUser.firstName)
             expect(body.lastName).not.toBe(initialUser.lastName)

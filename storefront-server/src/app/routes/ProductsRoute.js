@@ -83,7 +83,7 @@ router
         let queryResponse;
             queryResponse = await productService.deleteUser(id)
 
-        if (!queryResponse instanceof postgres.PostgresError) {
+        if (!(queryResponse instanceof postgres.PostgresError)) {
             res
                 .status(200)
                 .json(queryResponse)

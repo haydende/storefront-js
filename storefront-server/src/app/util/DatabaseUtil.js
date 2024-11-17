@@ -6,6 +6,8 @@ export class DatabaseUtil {
 
     static createConnection() {
         if (!this.sql) {
+
+            console.debug(`${new Date()} - Creating connection to Postgres host: ${process.env.PGHOST}:${process.env.PGPORT}`);
             this.sql = postgres({
                 username: process.env.PGUSERNAME,
                 password: process.env.PGPASSWORD,

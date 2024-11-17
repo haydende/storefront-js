@@ -1,5 +1,7 @@
 import { Router, json } from 'express'
+import postgres from "postgres";
 import { UserService } from '../service/UserService.js';
+import { handleError } from "./Routes.common.js";
 
 export const router = Router()
 const userService = new UserService()
@@ -11,6 +13,8 @@ router
     // Retrieve User with ID
     .get('/:id', async (req, res) => {
         const { id } = req.params
+
+        console.debug(`${new Date()} - Getting User with ID [${id}]`)
         let queryResponse = await userService.getUserWithId(id)
 
         if (queryResponse[0]) {
@@ -18,10 +22,8 @@ router
                 .status(200)
                 .json(queryResponse[0])
 
-        } else if (queryResponse.error) {
-            res
-                .status(500)
-                .json(queryResponse)
+        } else if (queryResponse instanceof postgres.PostgresError) {
+            handleError(res, queryResponse)
 
         } else {
             res
@@ -35,6 +37,7 @@ router
     .post('/new', async (req, res) => {
         const { userId, user_id, firstName, lastName, email, ...otherFields } = req.body
 
+        console.debug(`${new Date()} - Creating new User with fields: [${Object.keys({firstName, lastName, email, ...otherFields})}]`)
         let queryResponse;
         if (firstName && lastName && email) {
             queryResponse = await userService.createUser({
@@ -52,6 +55,7 @@ router
                     .json(queryResponse)
             }
         } else {
+            console.error(`${new Date()} - firstName, lastName and email fields weren't provided. Rejecting POST.`)
             res
                 .status(400)
                 .json({ error: '"firstName", "lastName" and "email" fields are required!' })
@@ -62,20 +66,20 @@ router
     .put('/:id', async (req, res) => {
         const { id } = req.params
 
+        console.debug(`${new Date()} - Updating User with ID [${id}] and fields [${Object.keys(req.body)}]`)
         let queryResponse;
         const userMatch = await userService.getUserWithId(id)
         if (typeof userMatch[0] === "object") {
             queryResponse = await userService.updateUser(id, req.body)
-            if (queryResponse.error) {
-                res
-                    .status(500)
-                    .json(queryResponse)
-            } else if (queryResponse[0]) {
+            if (queryResponse[0]) {
                 res
                     .status(200)
-                    .json(queryResponse)
+                    .json(queryResponse[0])
+            } else if (queryResponse instanceof postgres.PostgresError) {
+                handleError(res, queryResponse)
             }
         } else {
+            console.error(`User with ID [${id}] does not exist.`)
             res
                 .status(400)
                 .json({ error: `User with ID '${id}' does not exist`})
@@ -85,10 +89,14 @@ router
     .delete('/:id', async (req, res) => {
         const { id } = req.params
 
-        let queryResponse;
-            queryResponse = await userService.deleteUser(id)
+        console.debug(`${new Date()} - Deleting User with ID [${id}]`)
+        let queryResponse = await userService.deleteUser(id)
 
-        res
-            .status(queryResponse.message ? 200 : 500)
-            .json(queryResponse)
+        if (!(queryResponse instanceof postgres.PostgresError)) {
+            res
+                .status(200)
+                .json(queryResponse)
+        } else {
+            handleError(res, queryResponse)
+        }
     })

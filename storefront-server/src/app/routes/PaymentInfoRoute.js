@@ -104,7 +104,7 @@ router
         const { id } = req.params
         const queryResponse = await paymentInfoService.deletePaymentInfo(id)
 
-        if (!queryResponse instanceof postgres.PostgresError) {
+        if (!(queryResponse instanceof postgres.PostgresError)) {
             res
                 .status(200)
                 .json(queryResponse)
