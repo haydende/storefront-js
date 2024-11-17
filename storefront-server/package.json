@@ -7,6 +7,7 @@
   "scripts": {
     "start:local": "node src/app/main.js",
     "start:dev": "node src/app/main.js --env=./environment/dev.env",
+    "build": "esbuild --bundle --platform=node --outdir=./dist --out-extension:.js=.cjs src/app/main.js",
     "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js"
   },
   "author": "haydende",
