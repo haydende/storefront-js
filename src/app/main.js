@@ -5,15 +5,15 @@ import express, { Router } from 'express'
 program
     .option(
         '--env, --environment-file <filepath>',
-        '.env filepath to read the config from. Default is ../../environment/local.env',
-        '../../environment/local.env'
+        '.env filepath to read the config from. Default is ./environment/local.env',
+        './environment/local.env'
     )
 
 program.parse()
 
 const options = program.opts()
 
-console.info(`${new Date()} - Loading .env file from ${options.environmentFile}`)
+console.info(`${new Date()} - Loading environment data from ${options.environmentFile}`)
 dotenv.config({
     path: options.environmentFile
 })
