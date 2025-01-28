@@ -9,6 +9,24 @@ export class UserService {
        this.sql = DatabaseUtil.createConnection();
     }
 
+    async loginUser(email, password) {
+        let response
+        try {
+            response = await this.sql`
+                SELECT user_id "userId",
+                       email,
+                       password
+                FROM users
+                WHERE email = ${email} AND password = ${password};
+            `
+        } catch (error) {
+            const errorStr = `Error occurred while checking credentials for user with email: ${email}: ${error}`
+            console.error(errorStr)
+            return error
+        }
+        return response[0] != null
+    }
+
     async getUserWithId(id) {
 
         let response;

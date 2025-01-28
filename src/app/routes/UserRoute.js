@@ -1,7 +1,8 @@
 import { Router, json } from 'express'
-import postgres from "postgres";
-import { UserService } from '../service/UserService.js';
-import { handleError } from "./Routes.common.js";
+import Postgres from 'postgres'
+import postgres from "postgres"
+import { UserService } from '../service/UserService.js'
+import { handleError } from "./Routes.common.js"
 
 export const router = Router()
 const userService = new UserService()
@@ -30,6 +31,26 @@ router
                 .status(404)
                 .json({ error: `User '${id}' not found` })
 
+        }
+    })
+
+    .post('/login', async (req, res) => {
+        const { email, password } = req.body
+
+        console.debug(`${new Date()} - Attempting Login with credentials [email: ${email}, password: ${password}]`)
+        const response = await userService.loginUser(email, password)
+        if (response instanceof Postgres.PostgresError) {
+            handleError(res, response)
+        } else if (response instanceof Error ) {
+            res
+                .status(500)
+                .json(response)
+        } else {
+            res
+                .status(200)
+                .json({
+                    message: response ? 'Successfully logged in' : 'Credentials do not match'
+                })
         }
     })
 
