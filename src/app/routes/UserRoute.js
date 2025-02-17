@@ -44,11 +44,15 @@ router
         } else if (response instanceof Error ) {
             res
                 .status(500)
-                .json(response)
+                .json({
+                    result: false,
+                    ...response
+                })
         } else {
             res
                 .status(200)
                 .json({
+                    result: response,
                     message: response ? 'Successfully logged in' : 'Credentials do not match'
                 })
         }
