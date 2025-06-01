@@ -50,7 +50,7 @@ router
                 })
         } else {
             res
-                .status(200)
+                .status(response ? 200 : 401)
                 .json({
                     result: response,
                     message: response ? 'Successfully logged in' : 'Credentials do not match'

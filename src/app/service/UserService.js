@@ -20,7 +20,7 @@ export class UserService {
                 WHERE email = ${email} AND password = ${password};
             `
         } catch (error) {
-            const errorStr = `Error occurred while checking credentials for user with email: ${email}: ${error}`
+            const errorStr = `Error occurred while checking credentials for user with email: ${email}: ${error.stack}`
             console.error(errorStr)
             return error
         }
